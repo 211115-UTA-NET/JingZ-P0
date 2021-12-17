@@ -5975,8 +5975,8 @@
     },
     "StoreApp.App/1.0.0": {
       "type": "project",
-      "path": "../Store_Application/StoreApp.App.csproj",
-      "msbuildProject": "../Store_Application/StoreApp.App.csproj"
+      "path": "../StoreApp.App/StoreApp.App.csproj",
+      "msbuildProject": "../StoreApp.App/StoreApp.App.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -6015,8 +6015,8 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "projectReferences": {
-            "D:\\Study_Documents\\Revature\\Training\\JingZ-P0\\Store_Application\\Store_Application\\StoreApp.App.csproj": {
-              "projectPath": "D:\\Study_Documents\\Revature\\Training\\JingZ-P0\\Store_Application\\Store_Application\\StoreApp.App.csproj"
+            "D:\\Study_Documents\\Revature\\Training\\JingZ-P0\\Store_Application\\StoreApp.App\\StoreApp.App.csproj": {
+              "projectPath": "D:\\Study_Documents\\Revature\\Training\\JingZ-P0\\Store_Application\\StoreApp.App\\StoreApp.App.csproj"
             }
           }
         }
