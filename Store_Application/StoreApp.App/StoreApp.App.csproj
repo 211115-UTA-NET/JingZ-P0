@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\StoreApp.DataInfrastructure\StoreApp.DataInfrastructure.csproj" />
+    <ProjectReference Include="..\StoreApp.Logic\StoreApp.Logic.csproj" />
   </ItemGroup>
 
 </Project>
