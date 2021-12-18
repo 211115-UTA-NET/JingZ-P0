@@ -1674,11 +1674,24 @@
       "StoreApp.App/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
+        "dependencies": {
+          "StoreApp.DataInfrastructure": "1.0.0"
+        },
         "compile": {
           "bin/placeholder/StoreApp.App.dll": {}
         },
         "runtime": {
           "bin/placeholder/StoreApp.App.dll": {}
+        }
+      },
+      "StoreApp.DataInfrastructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "compile": {
+          "bin/placeholder/StoreApp.DataInfrastructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/StoreApp.DataInfrastructure.dll": {}
         }
       }
     }
@@ -5977,6 +5990,11 @@
       "type": "project",
       "path": "../StoreApp.App/StoreApp.App.csproj",
       "msbuildProject": "../StoreApp.App/StoreApp.App.csproj"
+    },
+    "StoreApp.DataInfrastructure/1.0.0": {
+      "type": "project",
+      "path": "../StoreApp.DataInfrastructure/StoreApp.DataInfrastructure.csproj",
+      "msbuildProject": "../StoreApp.DataInfrastructure/StoreApp.DataInfrastructure.csproj"
     }
   },
   "projectFileDependencyGroups": {
