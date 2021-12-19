@@ -28,5 +28,28 @@ namespace StoreApp.App
             locations.AppendLine("---------------------------------------------------------------");
             return locations.ToString();
         }
+        public string GetStoreProducts(string locationID, out bool validID)
+        {
+            IEnumerable<Product> allRecords = _repository.GetStoreProducts(locationID);
+            var products = new StringBuilder();
+            if (allRecords == null || !allRecords.Any())
+            {
+                products.AppendLine("--- Your Input is invalid, please try again. ---");
+                validID = false;
+            }
+            else
+            {
+                validID = true;
+                products.AppendLine($"ProductName\tPrice");
+                products.AppendLine("---------------------------------------------------------------");
+                foreach (var record in allRecords)
+                {
+                    products.AppendLine($"{record.ProductName}\t[{record.Price}]");
+                }
+                products.AppendLine("---------------------------------------------------------------");
+            }
+            
+            return products.ToString();
+        }
     }
 }

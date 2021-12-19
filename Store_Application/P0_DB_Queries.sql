@@ -40,6 +40,10 @@ CREATE TABLE StoreInventory(
     PRIMARY KEY (LocationID, ProductName)
 );
 
+-- Add CHECK constrain
+ALTER TABLE StoreInventory ADD CONSTRAINT CK_Price CHECK (Price > 0);
+ALTER TABLE StoreInventory ADD CONSTRAINT CK_ProductAmount CHECK (ProductAmount > 0);
+ALTER TABLE OrderProduct ADD CONSTRAINT CK_OrderAmount CHECK (Amount > 0);
 
 -- Add foreign key constrains
 ALTER TABLE CustomerOrder ADD CONSTRAINT FK_Customer_ID 
@@ -53,19 +57,38 @@ ALTER TABLE OrderProduct ADD CONSTRAINT FK_Order_LocationID
     
 ALTER TABLE StoreInventory ADD CONSTRAINT FK_Inventory_LocationID 
     FOREIGN KEY (LocationID) REFERENCES Location(ID);
-
+-----------------------------------
 SELECT * FROM Location;
 SELECT * FROM StoreInventory;
 -- Insert Location
-INSERT Location VALUES ('1164 44th St, Brooklyn, NY 11219');
+-- UPDATE Location SET StoreLocation='1551 3rd Ave, New York, NY 10128' WHERE ID =1;
+INSERT Location VALUES ('1551 3rd Ave, New York, NY 10128');			-- ID=1
+INSERT Location VALUES ('367 Russell St, Hadley, MA 01035');			-- ID=2
+INSERT Location VALUES ('613 Washington Blvd, Jersey City, NJ 07310');  -- ID=3
 
 
 -- Insert Inventory
 -- delete from StoreInventory where LocationID=1;
 INSERT StoreInventory VALUES 
-(1, 'Glass Cup', 3.90, 100),
-(1, 'Rice Cooker', 149.00, 30),
-(1, 'White Porcelain Spoon', 6.90, 100),
+(1, 'Gel Ink Cap Type Ballpoint Pen', 1.50, 100),
+(1, 'Paper Sketch Book', 3.90, 300),
+(1, 'Bind Plain Pocket Notebook', 1.90, 100),
 (1, 'Double Ringed Plain Notebook', 1.90, 200),
 (1, 'Standard File Box', 10.90, 100),
 (1, 'Handy Shredder', 14.90, 90);
+
+INSERT StoreInventory VALUES 
+(2, 'Highlighter', 1.90, 200),
+(2, 'Paper Sketch Book', 3.90, 100),
+(2, 'Aluminum Fountain Pen', 15.90, 50),
+(2, 'Double Ringed Plain Notebook', 1.90, 100),
+(2, 'Eraser', 0.50, 300),
+(2, 'Scissors', 4.90, 70),
+(2, 'Pen Case', 8.90, 100);
+
+INSERT StoreInventory VALUES 
+(3, 'Stapler', 4.90, 200),
+(3, 'Sticky Index', 2.90, 100),
+(3, 'Standard File Box', 10.90, 100),
+(3, 'Tape Dispenser', 9.90, 100),
+(3, 'Masking Tape', 1.9, 250);
