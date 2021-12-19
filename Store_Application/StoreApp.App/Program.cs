@@ -23,11 +23,14 @@ namespace StoreApp.App
                 if (exitShop) break;
                 // MENU SECTION
             MenuSelection:
-                Console.WriteLine("\nMenu Options:" +
-                    "1: Make a order" +
-                    "2: Display all order history of this store location" +
-                    "3: Display all order histroy of Stationery Shop" +
-                    "Exit: Exit The Store.");
+                Console.Write("Menu Options:\n" +
+                    "--------------------------------------------------------------\n" +
+                    "1: Make an order\n" +
+                    "2: Display all order history of this store location\n" +
+                    "3: Display all order histroy of Stationery Shop\n" +
+                    "Exit: Exit The Store.\n" +
+                    "--------------------------------------------------------------\n" +
+                    "Select an option: ");
                 string? menuSelection = Console.ReadLine();
                 if (CheckEmptyInput(menuSelection, out menuSelection)) goto MenuSelection;
                 if(ExitShop(menuSelection)) break; // if user want exit shop
@@ -155,8 +158,9 @@ namespace StoreApp.App
             List<String> productNames = new();
             List<int> productQty = new();
         Ordering:
-            Console.Write("Choose the product you want to order.\nEnter Product ID#: ");
+            Console.Write("\nChoose the product you want to order.\nEnter Product ID#: ");
             string? productID = Console.ReadLine();
+            // check null/empty input
             if (CheckEmptyInput(productID, out productID)) goto Ordering;
             // valid product id
             if (store.ValidProductID(productID, out string productName))
@@ -170,6 +174,7 @@ namespace StoreApp.App
                     productNames.Add(productName);  // add product Name to list
                     productQty.Add(orderAmount);
                     // continue ordering? or go checkout
+                    Console.WriteLine("------ TBC... ------");
                 }
                 else
                 {
@@ -190,7 +195,7 @@ namespace StoreApp.App
         /// </summary>
         public static void InvalidInputMsg()
         {
-            Console.WriteLine("--- Your Input is invalid, please try again. ---\n");
+            Console.WriteLine("\n--- Your Input is invalid, please try again. ---\n");
         }
         /// <summary>
         ///     Check if user input is null or empty

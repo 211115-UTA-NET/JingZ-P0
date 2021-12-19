@@ -87,6 +87,7 @@ namespace StoreApp.App
         {
             if (int.TryParse(productID, out int productId))
             {
+                productId -= 1; // used as List index
                 if (productId >= 0 && ProductList.Count > productId)
                 {
                     ProductName = ProductList[productId];
@@ -96,6 +97,15 @@ namespace StoreApp.App
             ProductName = "";
             return false;
         }
+
+        /// <summary>
+        ///     Check if user select product quantity is valid or not.
+        /// </summary>
+        /// <param name="productName">User selected product (valid)</param>
+        /// <param name="amount">User input amount</param>
+        /// <param name="locationID">Valid location ID</param>
+        /// <param name="orderAmount">return the valid order amount</param>
+        /// <returns>true if amount is valid, false otherwise.</returns>
         public bool validAmount(string productName, string amount, int locationID, out int orderAmount)
         {
             // amount <= inventory amount
@@ -103,6 +113,7 @@ namespace StoreApp.App
             {
                 if (orderAmount >= 100) return false; //can not order more than 99
                 int inventoryAmount = _repository.InventoryAmount(productName, locationID);
+                Console.WriteLine("inventory amount: " + inventoryAmount);
                 if(orderAmount <= inventoryAmount)
                 {
                     return true;

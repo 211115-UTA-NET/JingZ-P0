@@ -76,6 +76,21 @@ namespace StoreApp.DataInfrastructure
             }
             return customer;
         }
+        /// <summary>
+        ///     Find the product amount based on the location id and product name.
+        /// </summary>
+        /// <param name="productName">Valid product name</param>
+        /// <param name="locationID">Valid location ID</param>
+        /// <returns>The product amount in the local inventory.</returns>
+        public int InventoryAmount(string productName, int locationID)
+        {
+            DataSet dataSet = DBReadOnly(
+                "SELECT ProductAmount From StoreInventory Where LocationID = @locationID AND ProductName = @productName;",
+                new string[] { "locationID", "productName" },
+                new object[] { locationID, productName });
+            int amount = (int)dataSet.Tables[0].Rows[0]["ProductAmount"];
+            return amount;
+        }
 
         /// <summary>
         ///     A method takes a query parameters and returns a DataSet type result. 
@@ -121,9 +136,5 @@ namespace StoreApp.DataInfrastructure
             return rowsAffected;
         }
 
-        public int InventoryAmount(string productName, int locationID)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

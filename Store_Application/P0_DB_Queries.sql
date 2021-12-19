@@ -114,6 +114,7 @@ SELECT * FROM OrderProduct;
 -- check amount in the inventory vs order amount
 SELECT Amount FROM OrderProduct WHERE OrderNum=2 AND ProductName = 'Stabler';
 SELECT ProductAmount From StoreInventory Where LocationID = 3 AND ProductName='Stapler';
+
 -- update inventory
 UPDATE StoreInventory 
 SET 
@@ -121,3 +122,4 @@ ProductAmount
 = ProductAmount - (SELECT Amount FROM OrderProduct WHERE OrderNum=2 AND ProductName = 'Stabler')
 WHERE LocationID = 3 AND ProductName='Stapler';
 SELECT * FROM StoreInventory;
+
