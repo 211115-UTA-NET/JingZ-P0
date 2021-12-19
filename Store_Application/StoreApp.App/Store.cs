@@ -11,8 +11,10 @@ namespace StoreApp.App
     public class Store
     {
         private readonly IRepository _repository;
+        private List<string> ProductList;
         public Store(IRepository repository)
         {
+            ProductList = new();
             _repository = repository;
         }
         public string GetLocations()
@@ -26,13 +28,15 @@ namespace StoreApp.App
                 locations.AppendLine($"{record.LocationID}\t[{record.StoreLocation}]");
             }
             locations.AppendLine("---------------------------------------------------------------");
+            // get location always call before get store product.
+            // So product list will initialize each time user want to switch a location
+            ProductList = new(); 
             return locations.ToString();
         }
-        public string GetStoreProducts(string locationID, out bool validID, out List<string> productList)
+        public string GetStoreProducts(string locationID, out bool validID)
         {
             IEnumerable<Product> allRecords = _repository.GetStoreProducts(locationID);
             var products = new StringBuilder();
-            productList = new();
             if (allRecords == null || !allRecords.Any())
             {
                 products.AppendLine("--- Your Input is invalid, please try again. ---");
@@ -46,7 +50,8 @@ namespace StoreApp.App
                 int i = 1;
                 foreach (var record in allRecords)
                 {
-                    productList.Add(record.ProductName);
+                    // store ProductName
+                    ProductList.Add(record.ProductName);
                     products.AppendLine(string.Format("{0,10}|{1,30}|{2,10}", i, record.ProductName, record.Price));
                     i++;
                 }
@@ -76,6 +81,34 @@ namespace StoreApp.App
                 Console.WriteLine($"\nWelcome Back! {existCustomer.FirstName} {existCustomer.LastName}.\n");
             }
             return true;
+        }
+
+        public bool ValidProductID(string productID, out string ProductName)
+        {
+            if (int.TryParse(productID, out int productId))
+            {
+                if (productId >= 0 && ProductList.Count > productId)
+                {
+                    ProductName = ProductList[productId];
+                    return true;
+                }
+            }
+            ProductName = "";
+            return false;
+        }
+        public bool validAmount(string productName, string amount, int locationID, out int orderAmount)
+        {
+            // amount <= inventory amount
+            if (int.TryParse(amount, out orderAmount))
+            {
+                if (orderAmount >= 100) return false; //can not order more than 99
+                int inventoryAmount = _repository.InventoryAmount(productName, locationID);
+                if(orderAmount <= inventoryAmount)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

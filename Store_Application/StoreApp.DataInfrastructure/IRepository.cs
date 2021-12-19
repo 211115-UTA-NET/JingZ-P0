@@ -8,5 +8,6 @@ namespace StoreApp.DataInfrastructure
         IEnumerable<Product> GetStoreProducts(string locationID);
         int AddNewCustomer(string firstName, string lastName);
         IEnumerable<Customer> FindCustomer(string customerID);
+        int InventoryAmount(string productName, int locationID);
     }
 }

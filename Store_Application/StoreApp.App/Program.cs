@@ -11,10 +11,10 @@ namespace StoreApp.App
             // Connection to database
             string connectionString = File.ReadAllText("D:/Study_Documents/Revature/Training/DBConnectionStrings/StoreDB.txt");
             IRepository repository = new SqlRepository(connectionString);
-            Store store = new(repository);
             bool exitShop = false;
             while (!exitShop)
             {
+                Store store = new(repository);
                 // USER LOGIN SECTION
                 int CustomerID = CustomerLogin(store, out exitShop);
                 if (exitShop) break;
@@ -34,7 +34,7 @@ namespace StoreApp.App
                 if (menuSelection == "1")
                 {
                     // ORDERING SECTION
-                    Ordering();
+                    Ordering(store, LocationID);
                 }
                 else if(menuSelection == "2")
                 {
@@ -46,7 +46,7 @@ namespace StoreApp.App
                 }
                 else
                 {
-                    EmptyInputMessage();
+                    InvalidInputMsg();
                     goto MenuSelection;
                 }
 
@@ -62,8 +62,8 @@ namespace StoreApp.App
         /// <returns>int Customer ID</returns>
         public static int CustomerLogin(Store store, out bool exit)
         {
-            int CustomerID = -1;    // initialize
         NewCustomer:
+            int CustomerID = -1;    // initialize
             Console.Write("Before you start shopping, are you a new customer? (y/n) ");
             string? input = Console.ReadLine();
             // check if input is null/empty
@@ -113,7 +113,7 @@ namespace StoreApp.App
             }
             else
             {
-                EmptyInputMessage();
+                InvalidInputMsg();
                 goto NewCustomer;
             }
             return CustomerID;
@@ -139,36 +139,56 @@ namespace StoreApp.App
             exit = ExitShop(locationID); // if user want exit shop
             if (exit) return -1;
             // Print store products and get product list
-            Console.WriteLine(store.GetStoreProducts(locationID, out bool validID, out List<string> productList));
+            Console.WriteLine(store.GetStoreProducts(locationID, out bool validID));
             // invalidID go back to the top and try again
             if (!validID) goto StoreLocations;
             return int.Parse(locationID);
         }
-
-        public static void Ordering()
+        /// <summary>
+        ///     Ordering ask user to select products and quantity repeatedly 
+        ///     until user want to checkout.
+        /// </summary>
+        /// <param name="store">Store type class</param>
+        /// <param name="locationID">Location ID</param>
+        public static void Ordering(Store store, int locationID)
         {
-            /*
-            * Tasks:
-            * 1. add a loop for ordering
-            * 2. create a logic class to store user information: 
-            *      CustomerID, 
-            *      List<string> ProductName (data take from productList), 
-            *      List<int> ProductQty,
-            *      int LocationID
-            */
+            List<String> productNames = new();
+            List<int> productQty = new();
         Ordering:
             Console.Write("Choose the product you want to order.\nEnter Product ID#: ");
             string? productID = Console.ReadLine();
             if (CheckEmptyInput(productID, out productID)) goto Ordering;
-
-            Console.Write("Enter Product Quantity: ");
-            string? productAmount = Console.ReadLine();
-            if (CheckEmptyInput(productAmount, out productAmount)) goto Ordering;
+            // valid product id
+            if (store.ValidProductID(productID, out string productName))
+            {
+                Console.Write("Enter Product Quantity (Max Qty: 99): ");
+                string? orderQty = Console.ReadLine();
+                if (CheckEmptyInput(orderQty, out orderQty)) goto Ordering;
+                // valid quantity
+                if(store.validAmount(productName, orderQty, locationID, out int orderAmount))
+                {
+                    productNames.Add(productName);  // add product Name to list
+                    productQty.Add(orderAmount);
+                    // continue ordering? or go checkout
+                }
+                else
+                {
+                    InvalidInputMsg();
+                    goto Ordering;
+                }
+            }
+            else
+            {
+                InvalidInputMsg();
+                goto Ordering;
+            }
         }
+
+
         /// <summary>
         ///     Printing empty input error message.
         /// </summary>
-        public static void EmptyInputMessage()
+        public static void InvalidInputMsg()
         {
             Console.WriteLine("--- Your Input is invalid, please try again. ---\n");
         }
@@ -182,7 +202,7 @@ namespace StoreApp.App
         {
             if (userInput == null || userInput.Length <= 0)
             {
-                EmptyInputMessage();
+                InvalidInputMsg();
                 userNotNullInput = "";
                 return true;
             }

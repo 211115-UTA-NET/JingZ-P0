@@ -44,6 +44,7 @@ CREATE TABLE StoreInventory(
 ALTER TABLE StoreInventory ADD CONSTRAINT CK_Price CHECK (Price > 0);
 ALTER TABLE StoreInventory ADD CONSTRAINT CK_ProductAmount CHECK (ProductAmount > 0);
 ALTER TABLE OrderProduct ADD CONSTRAINT CK_OrderAmount CHECK (Amount > 0);
+ALTER TABLE OrderProduct ADD CONSTRAINT CK_OrderAmount2 CHECK (Amount < 100);
 
 -- Add foreign key constrains
 ALTER TABLE CustomerOrder ADD CONSTRAINT FK_Customer_ID 
@@ -100,3 +101,23 @@ SELECT * FROM Customer;
 DELETE FROM Customer WHERE ID=105;
 
 SELECT * FROM Customer WHERE ID = 106;
+
+-- when make a order
+INSERT CustomerOrder VALUES (106);
+SELECT * FROM CustomerOrder;
+
+-- inser order info
+-- amount must < 100
+INSERT OrderProduct (OrderNum, ProductName, Amount, LocationID) VALUES (2,'Masking Tape', 5, 3);
+SELECT * FROM OrderProduct;
+
+-- check amount in the inventory vs order amount
+SELECT Amount FROM OrderProduct WHERE OrderNum=2 AND ProductName = 'Stabler';
+SELECT ProductAmount From StoreInventory Where LocationID = 3 AND ProductName='Stapler';
+-- update inventory
+UPDATE StoreInventory 
+SET 
+ProductAmount 
+= ProductAmount - (SELECT Amount FROM OrderProduct WHERE OrderNum=2 AND ProductName = 'Stabler')
+WHERE LocationID = 3 AND ProductName='Stapler';
+SELECT * FROM StoreInventory;

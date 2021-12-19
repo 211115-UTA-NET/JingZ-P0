@@ -120,5 +120,10 @@ namespace StoreApp.DataInfrastructure
             connection.Close();
             return rowsAffected;
         }
+
+        public int InventoryAmount(string productName, int locationID)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
