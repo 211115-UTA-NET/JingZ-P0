@@ -2,11 +2,14 @@
 {
     public class Customer
     {
-        public string ID { get; }
-        public decimal Price { get; }
-        public Customer(string productName, decimal price)
+        public int CustomerID { get; }
+        public string LastName { get; }
+        public string FirstName { get; }
+        public Customer(int customerID, string firstName, string lastName)
         {
-            
+            CustomerID = customerID;
+            FirstName = firstName;
+            LastName = lastName;
         }
     }
 }

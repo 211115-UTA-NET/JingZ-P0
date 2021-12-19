@@ -61,5 +61,21 @@ namespace StoreApp.App
             int CustomerID = _repository.AddNewCustomer(firstName, lastName);
             return CustomerID;
         }
+
+        public bool SearchCustomer(string customerID)
+        {
+            IEnumerable<Customer> customer = _repository.FindCustomer(customerID);
+
+            if (customer == null || !customer.Any())
+            {
+                Console.WriteLine("--- Account Not Found. Please Try Again. ---");
+                return false;
+            }
+            foreach (var existCustomer in customer)
+            {
+                Console.WriteLine($"\nWelcome Back! {existCustomer.FirstName} {existCustomer.LastName}.\n");
+            }
+            return true;
+        }
     }
 }

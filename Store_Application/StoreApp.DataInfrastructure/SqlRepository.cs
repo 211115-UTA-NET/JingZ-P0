@@ -61,6 +61,21 @@ namespace StoreApp.DataInfrastructure
             }
             else return -1;
         }
+        public IEnumerable<Customer> FindCustomer(string customerID)
+        {
+            List<Customer> customer = new();
+            bool isInt = int.TryParse(customerID, out int CustomerID);
+            if (isInt) {
+                DataSet dataSet = DBReadOnly("SELECT * FROM Customer WHERE ID = @CustomerID;",
+                    new string[] { "CustomerID" },
+                    new object[] { CustomerID });
+                foreach (DataRow row in dataSet.Tables[0].Rows)
+                {
+                    customer.Add(new((int)row["ID"], (string)row["FirstName"], (string)row["LastName"]));
+                }
+            }
+            return customer;
+        }
 
         /// <summary>
         ///     A method takes a query parameters and returns a DataSet type result. 

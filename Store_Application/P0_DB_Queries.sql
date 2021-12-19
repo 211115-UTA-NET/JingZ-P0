@@ -97,3 +97,6 @@ SELECT ProductName, Price FROM StoreInventory WHERE LocationID = 1 ORDER BY Pric
 
 -- INSERT Customer VALUES (__, __);
 SELECT * FROM Customer;
+DELETE FROM Customer WHERE ID=105;
+
+SELECT * FROM Customer WHERE ID = 106;
