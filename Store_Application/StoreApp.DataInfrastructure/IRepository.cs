@@ -6,5 +6,6 @@ namespace StoreApp.DataInfrastructure
     {
         IEnumerable<Location> GetLocationList();
         IEnumerable<Product> GetStoreProducts(string locationID);
+        int AddNewCustomer(string firstName, string lastName);
     }
 }

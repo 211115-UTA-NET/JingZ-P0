@@ -34,7 +34,7 @@ namespace StoreApp.DataInfrastructure
             bool isInt = int.TryParse(locationID, out int locId);
             if (isInt)
             {
-                DataSet dataSet = DBReadOnly("SELECT ProductName, Price FROM StoreInventory WHERE LocationID = @locID;",
+                DataSet dataSet = DBReadOnly("SELECT ProductName, Price FROM StoreInventory WHERE LocationID = @locID ORDER BY Price",
                     new string[] { "locID" },
                     new object[] { locId });
                 foreach(DataRow row in dataSet.Tables[0].Rows)
@@ -47,6 +47,21 @@ namespace StoreApp.DataInfrastructure
             return result;
         }
 
+        public int AddNewCustomer(string firstName, string lastName)
+        {
+            int result = DBWriteOnly("INSERT Customer VALUES (@firstName, @lastName);",
+                new string[] { "firstName", "lastName" },
+                new object[] { firstName, lastName });
+            if (result > 0)
+            {
+                DataSet customerID = DBReadOnly("SELECT ID FROM Customer WHERE FirstName=@firstName AND LastName=@lastName",
+                    new string[] { "firstName", "lastName" },
+                    new object[] { firstName, lastName });
+                return (int)customerID.Tables[0].Rows[0]["ID"];
+            }
+            else return -1;
+        }
+
         /// <summary>
         ///     A method takes a query parameters and returns a DataSet type result. 
         ///     Only for read only database connection. (ex. SELECT)
@@ -56,7 +71,7 @@ namespace StoreApp.DataInfrastructure
         /// <param name="paramName">parameter name in your query (ex. "...WHERE ID = @id" paramName = "id")</param>
         /// <param name="inputVal">the value for the query search condition</param>
         /// <returns>DataSet type</returns>
-        public DataSet DBReadOnly(string? query, string[]? paramName = null, object[]? inputVal = null)
+        private DataSet DBReadOnly(string? query, string[]? paramName = null, object[]? inputVal = null)
         {
             using SqlConnection connection = new(_connectionString);
             connection.Open();
@@ -74,5 +89,21 @@ namespace StoreApp.DataInfrastructure
             return dataSet;
         }
 
+        private int DBWriteOnly(string? query, string[]? paramName = null, object[]? inputVal = null)
+        {
+            using SqlConnection connection = new(_connectionString);
+            connection.Open();
+            using SqlCommand command = new(query, connection);
+            if (paramName != null && inputVal != null)
+            {
+                for (int i = 0; i < inputVal.Length; i++)
+                {
+                    command.Parameters.AddWithValue($"@{paramName[i]}", inputVal[i]);
+                }
+            }
+            int rowsAffected = command.ExecuteNonQuery();
+            connection.Close();
+            return rowsAffected;
+        }
     }
 }

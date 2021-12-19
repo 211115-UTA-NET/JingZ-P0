@@ -92,3 +92,8 @@ INSERT StoreInventory VALUES
 (3, 'Standard File Box', 10.90, 100),
 (3, 'Tape Dispenser', 9.90, 100),
 (3, 'Masking Tape', 1.9, 250);
+
+SELECT ProductName, Price FROM StoreInventory WHERE LocationID = 1 ORDER BY Price;
+
+-- INSERT Customer VALUES (__, __);
+SELECT * FROM Customer;

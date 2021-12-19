@@ -28,10 +28,11 @@ namespace StoreApp.App
             locations.AppendLine("---------------------------------------------------------------");
             return locations.ToString();
         }
-        public string GetStoreProducts(string locationID, out bool validID)
+        public string GetStoreProducts(string locationID, out bool validID, out List<string> productList)
         {
             IEnumerable<Product> allRecords = _repository.GetStoreProducts(locationID);
             var products = new StringBuilder();
+            productList = new();
             if (allRecords == null || !allRecords.Any())
             {
                 products.AppendLine("--- Your Input is invalid, please try again. ---");
@@ -40,16 +41,25 @@ namespace StoreApp.App
             else
             {
                 validID = true;
-                products.AppendLine($"ProductName\tPrice");
+                products.AppendLine($"ID\t\tProductName\t\t\tPrice");
                 products.AppendLine("---------------------------------------------------------------");
+                int i = 1;
                 foreach (var record in allRecords)
                 {
-                    products.AppendLine($"{record.ProductName}\t[{record.Price}]");
+                    productList.Add(record.ProductName);
+                    products.AppendLine(string.Format("{0,10}|{1,30}|{2,10}", i, record.ProductName, record.Price));
+                    i++;
                 }
                 products.AppendLine("---------------------------------------------------------------");
             }
             
             return products.ToString();
+        }
+
+        public int CreateAccount(string firstName, string lastName)
+        {
+            int CustomerID = _repository.AddNewCustomer(firstName, lastName);
+            return CustomerID;
         }
     }
 }
