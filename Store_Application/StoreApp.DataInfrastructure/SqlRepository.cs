@@ -18,6 +18,51 @@ namespace StoreApp.DataInfrastructure
             _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
 
+        /// <summary>
+        ///     A method takes a query parameters and returns a DataSet type result. 
+        ///     Only for read only database connection. (ex. SELECT)
+        ///     Notes: colnames parameter 
+        /// </summary>
+        /// <param name="query">Database query command</param>
+        /// <param name="paramName">parameter name in your query (ex. "...WHERE ID = @id" paramName = "id")</param>
+        /// <param name="inputVal">the value for the query search condition</param>
+        /// <returns>DataSet type</returns>
+        private DataSet DBReadOnly(string? query, string[]? paramName = null, object[]? inputVal = null)
+        {
+            using SqlConnection connection = new(_connectionString);
+            connection.Open();
+            using SqlCommand command = new(query, connection);
+            if (paramName != null && inputVal != null)
+            {
+                for (int i = 0; i < inputVal.Length; i++)
+                {
+                    command.Parameters.AddWithValue($"@{paramName[i]}", inputVal[i]);
+                }
+            }
+            using SqlDataAdapter adapter = new(command);
+            DataSet dataSet = new();
+            adapter.Fill(dataSet);
+            connection.Close();
+            return dataSet;
+        }
+
+        private int DBWriteOnly(string? query, string[]? paramName = null, object[]? inputVal = null)
+        {
+            using SqlConnection connection = new(_connectionString);
+            connection.Open();
+            using SqlCommand command = new(query, connection);
+            if (paramName != null && inputVal != null)
+            {
+                for (int i = 0; i < inputVal.Length; i++)
+                {
+                    command.Parameters.AddWithValue($"@{paramName[i]}", inputVal[i]);
+                }
+            }
+            int rowsAffected = command.ExecuteNonQuery();
+            connection.Close();
+            return rowsAffected;
+        }
+
         public IEnumerable<Location> GetLocationList()
         {
             List<Location> result = new();
@@ -85,56 +130,98 @@ namespace StoreApp.DataInfrastructure
         public int InventoryAmount(string productName, int locationID)
         {
             DataSet dataSet = DBReadOnly(
-                "SELECT ProductAmount From StoreInventory Where LocationID = @locationID AND ProductName = @productName;",
+                "SELECT ProductAmount From StoreInventory WHERE LocationID = @locationID AND ProductName = @productName;",
                 new string[] { "locationID", "productName" },
                 new object[] { locationID, productName });
             int amount = (int)dataSet.Tables[0].Rows[0]["ProductAmount"];
             return amount;
         }
 
+        public int GetOrderNumber(int customerID)
+        {
+            int result = DBWriteOnly("INSERT CustomerOrder VALUES (@customerID)",
+                new string[] { "customerID" },
+                new object[] { customerID });
+            if (result > 0)
+            {
+                DataSet dataSet = DBReadOnly("SELECT MAX(OrderNum) AS OrderNum From CustomerOrder WHERE CustomerID = @customerID;",
+                    new string[] { "customerID" },
+                    new object[] { customerID });
+                return (int)dataSet.Tables[0].Rows[0]["OrderNum"];
+            }
+            return -1;
+        }
         /// <summary>
-        ///     A method takes a query parameters and returns a DataSet type result. 
-        ///     Only for read only database connection. (ex. SELECT)
-        ///     Notes: colnames parameter 
+        ///     Iterate the Order List data to the database, and update inventory amount.
+        ///     Return summary of the insertion as receipt.
         /// </summary>
-        /// <param name="query">Database query command</param>
-        /// <param name="paramName">parameter name in your query (ex. "...WHERE ID = @id" paramName = "id")</param>
-        /// <param name="inputVal">the value for the query search condition</param>
-        /// <returns>DataSet type</returns>
-        private DataSet DBReadOnly(string? query, string[]? paramName = null, object[]? inputVal = null)
+        /// <param name="order">Order type class</param>
+        /// <returns>Summary of the insertion as receipt.</returns>
+        public IEnumerable<Order> AddOrder(List<Order> order)
         {
-            using SqlConnection connection = new(_connectionString);
-            connection.Open();
-            using SqlCommand command = new(query, connection);
-            if (paramName!= null && inputVal != null)
+            List<Order> receipt = new();
+            foreach (Order orderProduct in order)
             {
-                for (int i = 0; i < inputVal.Length; i++) {
-                    command.Parameters.AddWithValue($"@{paramName[i]}", inputVal[i]);
-                }
+                // insert order product & update inventory amount
+                if (!InsertOrderProduct(orderProduct) || !UpdateInventoryAmount(orderProduct))
+                    break;
             }
-            using SqlDataAdapter adapter = new(command);
-            DataSet dataSet = new();
-            adapter.Fill(dataSet);
-            connection.Close();
-            return dataSet;
+            // all success
+            DataSet dataSet = DBReadOnly("SELECT * FROM OrderProduct WHERE OrderNum = @orderNum;",
+                    new string[] { "orderNum" },
+                    new object[] { order[0].OrderNum });
+            foreach (DataRow row in dataSet.Tables[0].Rows)
+            {
+                receipt.Add(new((int)row["OrderNum"], (string)row["ProductName"], (int)row["Amount"], (int)row["LocationID"], (DateTimeOffset)row["OrderTime"]));
+            }
+            return receipt;
         }
 
-        private int DBWriteOnly(string? query, string[]? paramName = null, object[]? inputVal = null)
+        /// <summary>
+        ///     Insert order product to 
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns>true if insert success, false otherwise.</returns>
+        private bool InsertOrderProduct(Order order)
         {
-            using SqlConnection connection = new(_connectionString);
-            connection.Open();
-            using SqlCommand command = new(query, connection);
-            if (paramName != null && inputVal != null)
-            {
-                for (int i = 0; i < inputVal.Length; i++)
-                {
-                    command.Parameters.AddWithValue($"@{paramName[i]}", inputVal[i]);
-                }
-            }
-            int rowsAffected = command.ExecuteNonQuery();
-            connection.Close();
-            return rowsAffected;
+            int result = DBWriteOnly("INSERT OrderProduct (OrderNum, ProductName, Amount, LocationID) " +
+                "VALUES (@orderNum, @productName, @amount, @locationID);",
+                new string[] { "orderNum", "productName", "amount", "locationID" },
+                new object[] { order.OrderNum, order.ProductName, order.ProductQty, order.LocationID });
+            if (result > 0) return true;
+            return false;
+        }
+        /// <summary>
+        ///     Update inventory table column. 
+        ///     Subtract the inventory amount by the customer order amount.
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns>true if update success, false otherwise.</returns>
+        private bool UpdateInventoryAmount(Order order)
+        {
+            string query = "UPDATE StoreInventory " +
+                "SET ProductAmount = ProductAmount - @orderAmount " +
+                "WHERE LocationID = @locationID AND ProductName = @productName;";
+
+            int result = DBWriteOnly(query,
+                new string[] { "orderAmount", "locationID", "productName" },
+                new object[] { order.ProductQty, order.LocationID, order.ProductName });
+            if (result > 0) return true;
+            return false;
         }
 
+        public List<decimal> GetPrice(List<Order> order)
+        {
+            List<decimal> price = new();
+            foreach (Order item in order)
+            {
+                DataSet dataSet = DBReadOnly(
+                    "SELECT Price FROM StoreInventory WHERE LocationID = @locationID AND ProductName=@productName",
+                    new string[] { "locationID", "productName" },
+                    new object[] { item.LocationID, item.ProductName });
+                price.Add((decimal)dataSet.Tables[0].Rows[0]["Price"]);
+            }
+            return price;
+        }
     }
 }

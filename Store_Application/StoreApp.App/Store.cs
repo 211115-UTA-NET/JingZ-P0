@@ -52,7 +52,7 @@ namespace StoreApp.App
                 {
                     // store ProductName
                     ProductList.Add(record.ProductName);
-                    products.AppendLine(string.Format("{0,10}|{1,30}|{2,10}", i, record.ProductName, record.Price));
+                    products.AppendLine(string.Format("{0,10} | {1,30} | {2,10}", i, record.ProductName, record.Price));
                     i++;
                 }
                 products.AppendLine("---------------------------------------------------------------");
@@ -111,9 +111,9 @@ namespace StoreApp.App
             // amount <= inventory amount
             if (int.TryParse(amount, out orderAmount))
             {
-                if (orderAmount >= 100) return false; //can not order more than 99
+                if (orderAmount >= 100 || orderAmount == 0) return false; // cannot order more than 99
                 int inventoryAmount = _repository.InventoryAmount(productName, locationID);
-                Console.WriteLine("inventory amount: " + inventoryAmount);
+                // Console.WriteLine("inventory amount: " + inventoryAmount);
                 if(orderAmount <= inventoryAmount)
                 {
                     return true;

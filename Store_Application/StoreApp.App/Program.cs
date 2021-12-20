@@ -4,12 +4,12 @@ namespace StoreApp.App
 {
     public class Program
     {
+        private static string connectionString = File.ReadAllText("D:/Study_Documents/Revature/Training/DBConnectionStrings/StoreDB.txt");
         public static void Main(string[] args)
         {
             Console.WriteLine("[ Welcome to Stationery Shop ]\n");
 
             // Connection to database
-            string connectionString = File.ReadAllText("D:/Study_Documents/Revature/Training/DBConnectionStrings/StoreDB.txt");
             IRepository repository = new SqlRepository(connectionString);
             bool exitShop = false;
             while (!exitShop)
@@ -23,7 +23,7 @@ namespace StoreApp.App
                 if (exitShop) break;
                 // MENU SECTION
             MenuSelection:
-                Console.Write("Menu Options:\n" +
+                Console.Write("\nMenu Options:\n" +
                     "--------------------------------------------------------------\n" +
                     "1: Make an order\n" +
                     "2: Display all order history of this store location\n" +
@@ -37,15 +37,18 @@ namespace StoreApp.App
                 if (menuSelection == "1")
                 {
                     // ORDERING SECTION
-                    Ordering(store, LocationID);
+                    Ordering(store, LocationID, CustomerID, out exitShop);
+                    if (exitShop) goto MenuSelection;
                 }
                 else if(menuSelection == "2")
                 {
                     // display all order history of this store location
+                    break;
                 }
                 else if(menuSelection == "3")
                 {
                     // display all order history of Stationery Shop
+                    break;
                 }
                 else
                 {
@@ -110,7 +113,7 @@ namespace StoreApp.App
                 }
                 Console.Write($"\nYour Account is Created Successfully!\n\n" +
                     $"Welcome to Stationery Shop, {firstName} {lastName}.\n" +
-                    $"-------------------------------------------------------" +
+                    $"-------------------------------------------------------\n" +
                     $"[ Your Customer ID#: {CustomerID} ]\n" +
                     $"[ Please Remember Your CustomerID For Later Login. ]\n\n");
             }
@@ -121,6 +124,7 @@ namespace StoreApp.App
             }
             return CustomerID;
         }
+
         /// <summary>
         ///     Store Information section.
         ///     Print all the store location and ask user to pick a choice.
@@ -147,45 +151,96 @@ namespace StoreApp.App
             if (!validID) goto StoreLocations;
             return int.Parse(locationID);
         }
+
         /// <summary>
         ///     Ordering ask user to select products and quantity repeatedly 
         ///     until user want to checkout.
         /// </summary>
         /// <param name="store">Store type class</param>
         /// <param name="locationID">Location ID</param>
-        public static void Ordering(Store store, int locationID)
+        public static void Ordering(Store store, int locationID, int customerID, out bool exit)
         {
             List<String> productNames = new();
             List<int> productQty = new();
-        Ordering:
-            Console.Write("\nChoose the product you want to order.\nEnter Product ID#: ");
-            string? productID = Console.ReadLine();
-            // check null/empty input
-            if (CheckEmptyInput(productID, out productID)) goto Ordering;
-            // valid product id
-            if (store.ValidProductID(productID, out string productName))
+            while (true)
             {
-                Console.Write("Enter Product Quantity (Max Qty: 99): ");
-                string? orderQty = Console.ReadLine();
-                if (CheckEmptyInput(orderQty, out orderQty)) goto Ordering;
-                // valid quantity
-                if(store.validAmount(productName, orderQty, locationID, out int orderAmount))
+            Ordering:
+                Console.Write("\nChoose the product you want to order.\nEnter Product ID#: ");
+                string? productID = Console.ReadLine();
+                // check null/empty input
+                if (CheckEmptyInput(productID, out productID)) goto Ordering;
+                // valid product id
+                if (store.ValidProductID(productID, out string productName))
                 {
-                    productNames.Add(productName);  // add product Name to list
-                    productQty.Add(orderAmount);
+                    Console.Write("Enter Product Quantity (Max Qty: 99): ");
+                    string? orderQty = Console.ReadLine();
+                    if (CheckEmptyInput(orderQty, out orderQty)) goto Ordering;
+                    // valid quantity
+                    if (store.validAmount(productName, orderQty, locationID, out int orderAmount))
+                    {
+                        // need to handle when select same product twice.
+                        if (productNames.Contains(productName))
+                        {
+                            int idx = productNames.IndexOf(productName);
+                            productQty[idx] += orderAmount;
+                        }
+                        else
+                        {
+                            productNames.Add(productName);  // add product Name to list
+                            productQty.Add(orderAmount);
+                        }
                     // continue ordering? or go checkout
-                    Console.WriteLine("------ TBC... ------");
+                    AskAgain:
+                        Console.Write("\nContinue shopping (1) or Go checkout (2): ");
+                        string? input = Console.ReadLine();
+                        if (CheckEmptyInput(input, out input)) goto AskAgain;
+                        if (input == "1")
+                        {
+                            goto Ordering;
+                        }
+                        else if (input == "2")
+                        {
+                            // display the shopping list
+                            IRepository repository = new SqlRepository(connectionString);
+                            OrderProcess orderProcess = new(repository);
+                            string receipt = orderProcess.DisplayOrderDetail(customerID, productNames, productQty, locationID, out bool Processfailed);
+                            if (Processfailed) goto Ordering;
+                            // thank you for your purchase ...
+                            Console.WriteLine("\nThank you for your purchase!\n");
+                            Console.WriteLine(receipt);
+                        ContinueShopping:
+                            Console.WriteLine("Would you like another order? (y/n)");
+                            string? continueShopping = Console.ReadLine();
+                            if (CheckEmptyInput(continueShopping, out continueShopping)) goto ContinueShopping;
+                            if(continueShopping.ToLower() == "y")
+                            {
+                                productNames = new();
+                                productQty = new();
+                                goto Ordering;
+                            } 
+                            else if(continueShopping.ToLower() == "n" || ExitShop(continueShopping))
+                            {
+                                exit = true;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            InvalidInputMsg();
+                            goto AskAgain;
+                        }
+                    }
+                    else
+                    {
+                        InvalidInputMsg();
+                        goto Ordering;
+                    }
                 }
                 else
                 {
                     InvalidInputMsg();
                     goto Ordering;
                 }
-            }
-            else
-            {
-                InvalidInputMsg();
-                goto Ordering;
             }
         }
 

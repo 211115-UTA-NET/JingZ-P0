@@ -41,10 +41,14 @@ CREATE TABLE StoreInventory(
 );
 
 -- Add CHECK constrain
-ALTER TABLE StoreInventory ADD CONSTRAINT CK_Price CHECK (Price > 0);
-ALTER TABLE StoreInventory ADD CONSTRAINT CK_ProductAmount CHECK (ProductAmount > 0);
-ALTER TABLE OrderProduct ADD CONSTRAINT CK_OrderAmount CHECK (Amount > 0);
+ALTER TABLE StoreInventory ADD CONSTRAINT CK_Price CHECK (Price >= 0);
+ALTER TABLE StoreInventory ADD CONSTRAINT CK_ProductAmount CHECK (ProductAmount >= 0);
+ALTER TABLE OrderProduct ADD CONSTRAINT CK_OrderAmount CHECK (Amount >= 0);
 ALTER TABLE OrderProduct ADD CONSTRAINT CK_OrderAmount2 CHECK (Amount < 100);
+
+ALTER TABLE StoreInventory DROP CONSTRAINT CK_Price
+ALTER TABLE StoreInventory DROP CONSTRAINT CK_ProductAmount
+ALTER TABLE OrderProduct DROP CONSTRAINT CK_OrderAmount
 
 -- Add foreign key constrains
 ALTER TABLE CustomerOrder ADD CONSTRAINT FK_Customer_ID 
@@ -98,28 +102,44 @@ SELECT ProductName, Price FROM StoreInventory WHERE LocationID = 1 ORDER BY Pric
 
 -- INSERT Customer VALUES (__, __);
 SELECT * FROM Customer;
-DELETE FROM Customer WHERE ID=105;
+DELETE FROM Customer WHERE ID=104;
 
 SELECT * FROM Customer WHERE ID = 106;
 
 -- when make a order
-INSERT CustomerOrder VALUES (106);
+INSERT INTO CustomerOrder VALUES (106)
+SELECT MAX(OrderNum) AS OrderNum From CustomerOrder WHERE CustomerID = 106;
+DELETE FROM CustomerOrder WHERE OrderNum = 8
 SELECT * FROM CustomerOrder;
+SELECT OrderNum FROM CustomerOrder where CustomerID = 106; -- get order number
 
 -- inser order info
 -- amount must < 100
-INSERT OrderProduct (OrderNum, ProductName, Amount, LocationID) VALUES (2,'Masking Tape', 5, 3);
-SELECT * FROM OrderProduct;
+INSERT OrderProduct (OrderNum, ProductName, Amount, LocationID) VALUES (9,'Masking Tape', 5, 3);
+UPDATE OrderProduct set ProductName='stapler' WHERE OrderNum = 2;
+
+-- get price from inventory
+SELECT OrderNum, OrderProduct.ProductName, Amount, StoreInventory.LocationID
+FROM OrderProduct
+INNER JOIN StoreInventory ON OrderProduct.LocationID = StoreInventory.LocationID
+WHERE StoreInventory.LocationID = 3 
+AND OrderProduct.OrderNum = 2 AND StoreInventory.ProductName = 'Stapler'
+
+SELECT * FROM OrderProduct WHERE OrderNum = 2;
+
+SELECT * FROM CustomerOrder
+SELECT * FROM OrderProduct
+SELECT * FROM StoreInventory
 
 -- check amount in the inventory vs order amount
-SELECT Amount FROM OrderProduct WHERE OrderNum=2 AND ProductName = 'Stabler';
+SELECT Amount FROM OrderProduct WHERE OrderNum=2 AND ProductName = 'Stapler';
 SELECT ProductAmount From StoreInventory Where LocationID = 3 AND ProductName='Stapler';
 
 -- update inventory
 UPDATE StoreInventory 
 SET 
 ProductAmount 
-= ProductAmount - (SELECT Amount FROM OrderProduct WHERE OrderNum=2 AND ProductName = 'Stabler')
+= ProductAmount - (SELECT Amount FROM OrderProduct WHERE OrderNum=2 AND ProductName = 'Stapler')
 WHERE LocationID = 3 AND ProductName='Stapler';
 SELECT * FROM StoreInventory;
 

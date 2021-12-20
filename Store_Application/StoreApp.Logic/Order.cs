@@ -10,15 +10,17 @@
         *      int LocationID
         */
         public int OrderNum { get; }
-        public int CustomerID { get; }
-        List<string> ProductName { get; }
-        List<int> ProductQty { get; }
-        public Order(int orderNum, int customerID, List<string> productName, List<int> productQty)
+        public string ProductName { get; }
+        public int ProductQty { get; }
+        public int LocationID { get; }
+        public DateTimeOffset? OrderDate { get; }
+        public Order(int orderNum, string productName, int productQty, int locationID, DateTimeOffset? date)
         {
             OrderNum = orderNum;
-            CustomerID = customerID;
             ProductName = productName;
             ProductQty = productQty;
+            LocationID = locationID;
+            OrderDate = date;
         }
     }
 }
