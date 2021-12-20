@@ -61,7 +61,13 @@ namespace StoreApp.App
                             once++;
                         }
                         price[i] *= record.ProductQty;
-                        receipt.AppendLine(string.Format("{0,30} | {1,10} | {2,10}", record.ProductName, record.ProductQty, price[i] ));
+                        try
+                        {
+                            receipt.AppendLine(string.Format("{0,30} | {1,10} | {2,10}", record.ProductName, record.ProductQty, price[i]));
+                        } catch(IndexOutOfRangeException e)
+                        {
+                            Console.WriteLine(e.StackTrace);
+                        }
                         totalPrice += price[i];
                         i++;
                     }
