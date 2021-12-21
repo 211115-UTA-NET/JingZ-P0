@@ -19,6 +19,7 @@ namespace StoreApp.App
                 int CustomerID = CustomerLogin(store, out exitShop);
                 if (exitShop) break;
                 // STORE INFORMATION SECTION
+            StoreLocation:
                 int LocationID = StoreLocation(store, out exitShop);
                 if (exitShop) break;
                 // MENU SECTION
@@ -28,13 +29,13 @@ namespace StoreApp.App
                     "     1: Make an order\n" +
                     "     2: Display all order history of this store location\n" +
                     "     3: Display all order histroy of Stationery Shop\n" +
-                    "  Exit: Exit The Store.\n" +
+                    "  Exit: Exit this store location.\n" +
                     "--------------------------------------------------------------\n" +
                     "Select an option: ");
                 string? menuSelection = Console.ReadLine();
                 Console.WriteLine();
                 if (CheckEmptyInput(menuSelection, out menuSelection)) goto MenuSelection;
-                if(ExitShop(menuSelection)) break; // if user want exit shop
+                if(ExitShop(menuSelection)) goto StoreLocation; // if user want exit shop
                 if (menuSelection.Trim() == "1")
                 {
                     // ORDERING SECTION
@@ -44,13 +45,13 @@ namespace StoreApp.App
                 else if(menuSelection.Trim() == "2")
                 {
                     // display all order history of this store location
-                    Console.WriteLine(orderProcess.DisplayLocationOrder(CustomerID, out bool getHistoryFailed, LocationID));
+                    Console.WriteLine(orderProcess.DisplayOrderHistory(CustomerID, out bool getHistoryFailed, LocationID));
                     if(getHistoryFailed) goto MenuSelection;
                 }
                 else if(menuSelection.Trim() == "3")
                 {
                     // display all order history of Stationery Shop
-                    Console.WriteLine(orderProcess.DisplayLocationOrder(CustomerID, out bool getHistoryFailed));
+                    Console.WriteLine(orderProcess.DisplayOrderHistory(CustomerID, out bool getHistoryFailed));
                     if (getHistoryFailed) goto MenuSelection;
                 }
                 else
@@ -59,11 +60,11 @@ namespace StoreApp.App
                     goto MenuSelection;
                 }
             ExitOrNot:
-                Console.Write("Enter (1) Go back to Menu OR (exit) for exit the store: ");
+                Console.Write("Enter (1) Go back to Menu OR (exit) for exit the store location: ");
                 string? goMenu = Console.ReadLine();
                 if (CheckEmptyInput(goMenu, out goMenu)) goto ExitOrNot;
                 if (goMenu.Trim() == "1") goto MenuSelection;
-                else if (ExitShop(goMenu)) break;
+                else if (ExitShop(goMenu)) goto StoreLocation;
                 else
                 {
                     InvalidInputMsg();

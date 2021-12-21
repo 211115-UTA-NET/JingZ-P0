@@ -156,10 +156,10 @@ SELECT * FROM StoreInventory;
 SELECT * FROM CustomerOrder
 SELECT * FROM OrderProduct
 
-SELECT OrderProduct.OrderNum, ProductName, Amount, LocationID,Location.StoreLocation, OrderTime FROM CustomerOrder 
+SELECT OrderProduct.OrderNum, ProductName, Amount, LocationID, Location.StoreLocation, OrderTime FROM CustomerOrder 
 INNER JOIN OrderProduct ON CustomerOrder.OrderNum = OrderProduct.OrderNum 
 INNER JOIN Location ON LocationID = Location.ID
-WHERE CustomerID = 106 AND LocationID=3 ORDER BY OrderProduct.OrderNum;
+WHERE CustomerID = 106 AND LocationID=2 ORDER BY OrderProduct.OrderNum;
 
 -- display all orders of this customer
 SELECT * FROM CustomerOrder
@@ -167,7 +167,7 @@ SELECT * FROM OrderProduct
 SELECT OrderProduct.OrderNum, ProductName, Amount, Location.ID, Location.StoreLocation, OrderTime FROM CustomerOrder 
 INNER JOIN OrderProduct ON CustomerOrder.OrderNum = OrderProduct.OrderNum 
 INNER JOIN Location ON LocationID = Location.ID
-WHERE CustomerID = 106 ORDER BY OrderProduct.OrderNum;
+WHERE CustomerID = 107 ORDER BY OrderProduct.OrderNum;
 
 -- empty up tables
 DELETE FROM CustomerOrder WHERE CustomerID = 106

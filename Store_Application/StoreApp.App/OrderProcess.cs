@@ -15,7 +15,16 @@ namespace StoreApp.App
         {
             _repository = repository;
         }
-
+        /// <summary>
+        ///     Used to display the order detail when a user palced an order. 
+        ///     Process include insert order information to database then display the result.
+        /// </summary>
+        /// <param name="customerID">customer id number</param>
+        /// <param name="productNames">selected products as a list</param>
+        /// <param name="productQty">selected product quantities as a list</param>
+        /// <param name="locationID">store location id</param>
+        /// <param name="Processfailed">return true if process succeed, false otherwise</param>
+        /// <returns>A string of the order receipt</returns>
         public string DisplayOrderDetail(int customerID, List<string> productNames, List<int> productQty, int locationID, out bool Processfailed)
         {
             // Checking List contents:
@@ -54,8 +63,14 @@ namespace StoreApp.App
             }
             return receipt.ToString();
         }
-
-        public string DisplayLocationOrder(int customerID, out bool getHistoryFailed, int locationID = -1)
+        /// <summary>
+        ///     Used to display order history. if locationID param has a value then it will return order history of the user in current store location.
+        /// </summary>
+        /// <param name="customerID"></param>
+        /// <param name="getHistoryFailed"></param>
+        /// <param name="locationID"></param>
+        /// <returns></returns>
+        public string DisplayOrderHistory(int customerID, out bool getHistoryFailed, int locationID = -1)
         {
             var orderHistory = new StringBuilder();
             IEnumerable<Order> allRecords;
@@ -78,26 +93,33 @@ namespace StoreApp.App
                 var allrecords = (List<Order>)allRecords;
                 int prevOrderNum = allrecords[0].OrderNum;
                 tmp.Add(allrecords[0]);
-                int currentOrderNum;
-                for (int i = 1; i < allrecords.Count; i++)
+                if (allrecords.Count == 1)
                 {
-                    currentOrderNum = allrecords[i].OrderNum;
-                    if(currentOrderNum == prevOrderNum)
+                    orderHistory.AppendLine(OrderRecordFormat(allrecords));
+                }
+                else
+                {
+                    int currentOrderNum;
+                    for (int i = 1; i < allrecords.Count; i++)
                     {
-                        tmp.Add(allrecords[i]);
-                        if (i == allrecords.Count - 1)
+                        currentOrderNum = allrecords[i].OrderNum;
+                        if (currentOrderNum == prevOrderNum)
+                        {
+                            tmp.Add(allrecords[i]);
+                            if (i == allrecords.Count - 1)
+                                orderHistory.AppendLine(OrderRecordFormat(tmp));
+                        }
+                        else
+                        {
                             orderHistory.AppendLine(OrderRecordFormat(tmp));
+                            tmp = new();
+                            tmp.Add(allrecords[i]);
+                            // if last records didn't append
+                            if (i == allrecords.Count - 1)
+                                orderHistory.AppendLine(OrderRecordFormat(tmp));
+                        }
+                        prevOrderNum = currentOrderNum;
                     }
-                    else
-                    {
-                        orderHistory.AppendLine(OrderRecordFormat(tmp));
-                        tmp = new();
-                        tmp.Add(allrecords[i]);
-                        // if last records didn't append
-                        if(i == allrecords.Count - 1)
-                            orderHistory.AppendLine(OrderRecordFormat(tmp));
-                    }
-                    prevOrderNum = currentOrderNum;
                 }
                 getHistoryFailed = false;
             }
@@ -115,7 +137,7 @@ namespace StoreApp.App
             {
                 if (once == 0)
                 {
-                    format.AppendLine(string.Format("Order#: {0} | Ordered at: {1,10}", record.OrderNum, record.OrderDate));
+                    format.AppendLine(string.Format("Order#: {0} | Ordered at: {1,10}", record.OrderNum, record.OrderTime));
                     format.AppendLine("Store Location: " + record.Location);
                     format.AppendLine($"Product Name\t\t\tPurchased Quantity\tPrice");
                     format.AppendLine("---------------------------------------------------------------");
