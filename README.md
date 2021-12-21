@@ -20,7 +20,7 @@ Nov 15 2021 Arlington .NET / Richard Hawkins, Nick Escalona
 ## design
 * don't use public fields √
 * define and use at least one interface √
-* documentation with `<summary>` XML comments on all public types and members (optional: `<params>` and `<return>`)
+* documentation with `<summary>` XML comments on all public types and members (optional: `<params>` and `<return>`) √
 
 #### customer
 * has first name, last name, etc. √
