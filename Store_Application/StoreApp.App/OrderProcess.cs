@@ -47,36 +47,95 @@ namespace StoreApp.App
                 }
                 else
                 {
-                    List<decimal> price = _repository.GetPrice(order);
-                    int once = 0;
-                    int i = 0;
-                    decimal totalPrice = 0;
-                    foreach (var record in allRecords)
-                    {
-                        if(once == 0)
-                        {
-                            receipt.AppendLine(string.Format("Order#: {0} | Ordered at: {1,10}", record.OrderNum, record.OrderDate));
-                            receipt.AppendLine($"Product Name\t\tPurchased Amount\t\tPrice");
-                            receipt.AppendLine("---------------------------------------------------------------");
-                            once++;
-                        }
-                        price[i] *= record.ProductQty;
-                        try
-                        {
-                            receipt.AppendLine(string.Format("{0,30} | {1,10} | {2,10}", record.ProductName, record.ProductQty, price[i]));
-                        } catch(IndexOutOfRangeException e)
-                        {
-                            Console.WriteLine(e.StackTrace);
-                        }
-                        totalPrice += price[i];
-                        i++;
-                    }
-                    receipt.AppendLine("---------------------------------------------------------------");
-                    receipt.AppendLine($"Total Price: ${totalPrice}\n");
+                    // List<decimal> price = _repository.GetPrice(order);
+                    receipt.AppendLine(OrderRecordFormat(allRecords));
                     Processfailed = false;
                 }
             }
             return receipt.ToString();
+        }
+
+        public string DisplayLocationOrder(int customerID, out bool getHistoryFailed, int locationID = -1)
+        {
+            var orderHistory = new StringBuilder();
+            IEnumerable<Order> allRecords;
+            if (locationID > -1)
+            {
+                allRecords = _repository.GetLocationOrders(customerID, locationID);
+            }
+            else
+            {
+                allRecords = _repository.GetStoreOrders(customerID);
+            }
+            if (allRecords == null || !allRecords.Any())
+            {
+                orderHistory.AppendLine("--- Your order histroy is empty. ---");
+                getHistoryFailed = true;
+            }
+            else
+            {
+                List<Order> tmp = new();
+                var allrecords = (List<Order>)allRecords;
+                int prevOrderNum = allrecords[0].OrderNum;
+                tmp.Add(allrecords[0]);
+                int currentOrderNum;
+                for (int i = 1; i < allrecords.Count; i++)
+                {
+                    currentOrderNum = allrecords[i].OrderNum;
+                    if(currentOrderNum == prevOrderNum)
+                    {
+                        tmp.Add(allrecords[i]);
+                        if (i == allrecords.Count - 1)
+                            orderHistory.AppendLine(OrderRecordFormat(tmp));
+                    }
+                    else
+                    {
+                        orderHistory.AppendLine(OrderRecordFormat(tmp));
+                        tmp = new();
+                        tmp.Add(allrecords[i]);
+                        // if last records didn't append
+                        if(i == allrecords.Count - 1)
+                            orderHistory.AppendLine(OrderRecordFormat(tmp));
+                    }
+                    prevOrderNum = currentOrderNum;
+                }
+                getHistoryFailed = false;
+            }
+            return orderHistory.ToString();
+        }
+
+        private string OrderRecordFormat(IEnumerable<Order> allRecords)
+        {
+            List<decimal> price = _repository.GetPrice((List<Order>)allRecords);
+            var format = new StringBuilder();
+            int once = 0;
+            int i = 0;
+            decimal totalPrice = 0;
+            foreach (var record in allRecords)
+            {
+                if (once == 0)
+                {
+                    format.AppendLine(string.Format("Order#: {0} | Ordered at: {1,10}", record.OrderNum, record.OrderDate));
+                    format.AppendLine("Store Location: " + record.Location);
+                    format.AppendLine($"Product Name\t\t\tPurchased Quantity\tPrice");
+                    format.AppendLine("---------------------------------------------------------------");
+                    once++;
+                }
+                price[i] *= record.ProductQty;
+                try
+                {
+                    format.AppendLine(string.Format("{0,30} | {1,13} | {2,10}", record.ProductName, record.ProductQty, price[i]));
+                }
+                catch (IndexOutOfRangeException e)
+                {
+                    Console.WriteLine(e.StackTrace);
+                }
+                totalPrice += price[i];
+                i++;
+            }
+            format.AppendLine("---------------------------------------------------------------");
+            format.AppendLine($"Total Price: ${totalPrice}\n");
+            return format.ToString();
         }
 
         private IEnumerable<Order> ProcessOrder(List<Order> order)

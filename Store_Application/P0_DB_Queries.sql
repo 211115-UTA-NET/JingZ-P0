@@ -50,7 +50,7 @@ ALTER TABLE StoreInventory DROP CONSTRAINT CK_Price
 ALTER TABLE StoreInventory DROP CONSTRAINT CK_ProductAmount
 ALTER TABLE OrderProduct DROP CONSTRAINT CK_OrderAmount
 
--- Add foreign key constrains
+-- Add foreign key constraint
 ALTER TABLE CustomerOrder ADD CONSTRAINT FK_Customer_ID 
     FOREIGN KEY (CustomerID) REFERENCES Customer(ID);
 
@@ -127,6 +127,7 @@ AND OrderProduct.OrderNum = 2 AND StoreInventory.ProductName = 'Stapler'
 
 SELECT * FROM OrderProduct WHERE OrderNum = 2;
 
+
 SELECT * FROM CustomerOrder
 SELECT * FROM OrderProduct
 SELECT * FROM StoreInventory
@@ -143,3 +144,31 @@ ProductAmount
 WHERE LocationID = 3 AND ProductName='Stapler';
 SELECT * FROM StoreInventory;
 
+-- get price
+SELECT Price FROM StoreInventory WHERE LocationID = 2 AND ProductName='Eraser'
+
+SELECT * FROM Customer WHERE FirstName='John' AND LastName='Doe';
+
+-- display all orders in the store location from specific customer
+SELECT * FROM Customer
+SELECT * FROM Location
+SELECT * FROM StoreInventory;
+SELECT * FROM CustomerOrder
+SELECT * FROM OrderProduct
+
+SELECT OrderProduct.OrderNum, ProductName, Amount, LocationID,Location.StoreLocation, OrderTime FROM CustomerOrder 
+INNER JOIN OrderProduct ON CustomerOrder.OrderNum = OrderProduct.OrderNum 
+INNER JOIN Location ON LocationID = Location.ID
+WHERE CustomerID = 106 AND LocationID=3 ORDER BY OrderProduct.OrderNum;
+
+-- display all orders of this customer
+SELECT * FROM CustomerOrder
+SELECT * FROM OrderProduct
+SELECT OrderProduct.OrderNum, ProductName, Amount, Location.ID, Location.StoreLocation, OrderTime FROM CustomerOrder 
+INNER JOIN OrderProduct ON CustomerOrder.OrderNum = OrderProduct.OrderNum 
+INNER JOIN Location ON LocationID = Location.ID
+WHERE CustomerID = 106 ORDER BY OrderProduct.OrderNum;
+
+-- empty up tables
+DELETE FROM CustomerOrder WHERE CustomerID = 106
+DELETE FROM OrderProduct WHERE LocationID = 3

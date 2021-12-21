@@ -8,9 +8,9 @@ namespace StoreApp.App
         public static void Main(string[] args)
         {
             Console.WriteLine("[ Welcome to Stationery Shop ]\n");
-
             // Connection to database
             IRepository repository = new SqlRepository(connectionString);
+            OrderProcess orderProcess = new(repository);
             bool exitShop = false;
             while (!exitShop)
             {
@@ -25,37 +25,50 @@ namespace StoreApp.App
             MenuSelection:
                 Console.Write("\nMenu Options:\n" +
                     "--------------------------------------------------------------\n" +
-                    "1: Make an order\n" +
-                    "2: Display all order history of this store location\n" +
-                    "3: Display all order histroy of Stationery Shop\n" +
-                    "Exit: Exit The Store.\n" +
+                    "     1: Make an order\n" +
+                    "     2: Display all order history of this store location\n" +
+                    "     3: Display all order histroy of Stationery Shop\n" +
+                    "  Exit: Exit The Store.\n" +
                     "--------------------------------------------------------------\n" +
                     "Select an option: ");
                 string? menuSelection = Console.ReadLine();
+                Console.WriteLine();
                 if (CheckEmptyInput(menuSelection, out menuSelection)) goto MenuSelection;
                 if(ExitShop(menuSelection)) break; // if user want exit shop
-                if (menuSelection == "1")
+                if (menuSelection.Trim() == "1")
                 {
                     // ORDERING SECTION
                     Ordering(store, LocationID, CustomerID, out exitShop);
                     if (exitShop) goto MenuSelection;
                 }
-                else if(menuSelection == "2")
+                else if(menuSelection.Trim() == "2")
                 {
                     // display all order history of this store location
-                    break;
+                    Console.WriteLine(orderProcess.DisplayLocationOrder(CustomerID, out bool getHistoryFailed, LocationID));
+                    if(getHistoryFailed) goto MenuSelection;
                 }
-                else if(menuSelection == "3")
+                else if(menuSelection.Trim() == "3")
                 {
                     // display all order history of Stationery Shop
-                    break;
+                    Console.WriteLine(orderProcess.DisplayLocationOrder(CustomerID, out bool getHistoryFailed));
+                    if (getHistoryFailed) goto MenuSelection;
                 }
                 else
                 {
                     InvalidInputMsg();
                     goto MenuSelection;
                 }
-
+            ExitOrNot:
+                Console.Write("Enter (1) Go back to Menu OR (exit) for exit the store: ");
+                string? goMenu = Console.ReadLine();
+                if (CheckEmptyInput(goMenu, out goMenu)) goto ExitOrNot;
+                if (goMenu.Trim() == "1") goto MenuSelection;
+                else if (ExitShop(goMenu)) break;
+                else
+                {
+                    InvalidInputMsg();
+                    goto ExitOrNot;
+                }
             }
         }
         /// <summary>
@@ -82,13 +95,29 @@ namespace StoreApp.App
             {
             Login:
                 // Login User
-                Console.Write("Please Enter Your Customer ID#: ");
+                Console.Write("Please Enter [Your Customer ID#] OR Enter [forgot] for Forgot Customer ID: ");
                 string? customerID = Console.ReadLine();
                 if (CheckEmptyInput(customerID, out customerID)) goto Login;
+                bool customerExist;
+                if (customerID.ToLower() == "forgot")
+                {
+                    Console.Write("Enter Your First Name: ");
+                    string? firstName = Console.ReadLine();
+                    // check if firstname is null/empty
+                    if (CheckEmptyInput(firstName, out firstName)) goto Login;
 
-                bool customerExist = store.SearchCustomer(customerID);
-                if (!customerExist) goto Login;
-                CustomerID = int.Parse(customerID);  // store customer ID
+                    Console.Write("Enter Your Last Name: ");
+                    string? lastName = Console.ReadLine();
+                    // check if lastname is null/empty
+                    if (CheckEmptyInput(lastName, out lastName)) goto Login;
+                    customerExist = store.SearchCustomer(customerID, out CustomerID, firstName, lastName);
+                    if (!customerExist) goto Login;
+                }
+                else
+                {
+                    customerExist = store.SearchCustomer(customerID, out CustomerID);
+                    if (!customerExist) goto Login;
+                }
             }
             else if (input.ToLower() == "y")    // new customer, add to database
             {
@@ -115,7 +144,7 @@ namespace StoreApp.App
                     $"Welcome to Stationery Shop, {firstName} {lastName}.\n" +
                     $"-------------------------------------------------------\n" +
                     $"[ Your Customer ID#: {CustomerID} ]\n" +
-                    $"[ Please Remember Your CustomerID For Later Login. ]\n\n");
+                    $"[ Please Remember Your Customer ID For Later Login. ]\n\n");
             }
             else
             {
@@ -209,7 +238,7 @@ namespace StoreApp.App
                             Console.WriteLine("\nThank you for your purchase!\n");
                             Console.WriteLine(receipt);
                         ContinueShopping:
-                            Console.WriteLine("Would you like another order? (y/n)");
+                            Console.Write("Would you like another order? (y/n) ");
                             string? continueShopping = Console.ReadLine();
                             if (CheckEmptyInput(continueShopping, out continueShopping)) goto ContinueShopping;
                             if(continueShopping.ToLower() == "y")
@@ -232,7 +261,6 @@ namespace StoreApp.App
                     }
                     else
                     {
-                        InvalidInputMsg();
                         goto Ordering;
                     }
                 }
@@ -278,7 +306,7 @@ namespace StoreApp.App
         {
             if (userInput.ToLower() == "exit")
             {
-                Console.WriteLine("--- Thank you and bye. Looking forward your next visit. ---");
+                Console.WriteLine("\n--- Thank You and Bye. Looking forward your next visit! ---\n");
                 return true;
             }
             return false;

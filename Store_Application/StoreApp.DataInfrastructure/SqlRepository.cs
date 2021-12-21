@@ -106,7 +106,7 @@ namespace StoreApp.DataInfrastructure
             }
             else return -1;
         }
-        public IEnumerable<Customer> FindCustomer(string customerID)
+        public IEnumerable<Customer> FindCustomer(string customerID, string firstName = "", string lastName = "")
         {
             List<Customer> customer = new();
             bool isInt = int.TryParse(customerID, out int CustomerID);
@@ -118,9 +118,19 @@ namespace StoreApp.DataInfrastructure
                 {
                     customer.Add(new((int)row["ID"], (string)row["FirstName"], (string)row["LastName"]));
                 }
+            } else if(!isInt && customerID.ToLower() == "forgot")
+            {
+                DataSet dataSet = DBReadOnly("SELECT * FROM Customer WHERE FirstName=@firstName AND LastName=@lastName;",
+                    new string[] { "firstName", "lastName" },
+                    new object[] { firstName, lastName });
+                foreach (DataRow row in dataSet.Tables[0].Rows)
+                {
+                    customer.Add(new((int)row["ID"], (string)row["FirstName"], (string)row["LastName"]));
+                }
             }
             return customer;
         }
+
         /// <summary>
         ///     Find the product amount based on the location id and product name.
         /// </summary>
@@ -166,7 +176,7 @@ namespace StoreApp.DataInfrastructure
                 if (!InsertOrderProduct(orderProduct) || !UpdateInventoryAmount(orderProduct))
                     break;
             }
-            // all success
+            // all success return receipt
             DataSet dataSet = DBReadOnly("SELECT * FROM OrderProduct WHERE OrderNum = @orderNum;",
                     new string[] { "orderNum" },
                     new object[] { order[0].OrderNum });
@@ -222,6 +232,44 @@ namespace StoreApp.DataInfrastructure
                 price.Add((decimal)dataSet.Tables[0].Rows[0]["Price"]);
             }
             return price;
+        }
+
+        public IEnumerable<Order> GetLocationOrders(int customerID, int locationID)
+        {
+            List<Order> orderHistroy = new();
+            string query = "SELECT OrderProduct.OrderNum, ProductName, Amount, LocationID, Location.StoreLocation, OrderTime " +
+                "FROM CustomerOrder " +
+                "INNER JOIN OrderProduct ON CustomerOrder.OrderNum = OrderProduct.OrderNum " +
+                "INNER JOIN Location ON LocationID = Location.ID " +
+                "WHERE CustomerID = @customerId AND LocationID = @locationId ORDER BY OrderProduct.OrderNum;";
+            DataSet dataSet = DBReadOnly(query,
+                 new string[] { "customerId", "locationId" },
+                 new object[] { customerID, locationID });
+            foreach (DataRow row in dataSet.Tables[0].Rows)
+            {
+                orderHistroy.Add(new((int)row["OrderNum"], (string)row["ProductName"], (int)row["Amount"], 
+                    (int)row["LocationID"], (DateTimeOffset)row["OrderTime"], (string)row["StoreLocation"]));
+            }
+            return orderHistroy;
+        }
+
+        public IEnumerable<Order> GetStoreOrders(int customerID)
+        {
+            List<Order> orderHistroy = new();
+            string query = "SELECT OrderProduct.OrderNum, ProductName, Amount, LocationID, Location.StoreLocation, OrderTime " +
+                "FROM CustomerOrder " +
+                "INNER JOIN OrderProduct ON CustomerOrder.OrderNum = OrderProduct.OrderNum " +
+                "INNER JOIN Location ON LocationID = Location.ID " +
+                "WHERE CustomerID = @customerId ORDER BY OrderProduct.OrderNum;";
+            DataSet dataSet = DBReadOnly(query,
+                 new string[] { "customerId" },
+                 new object[] { customerID });
+            foreach (DataRow row in dataSet.Tables[0].Rows)
+            {
+                orderHistroy.Add(new((int)row["OrderNum"], (string)row["ProductName"], (int)row["Amount"],
+                    (int)row["LocationID"], (DateTimeOffset)row["OrderTime"], (string)row["StoreLocation"]));
+            }
+            return orderHistroy;
         }
     }
 }

@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace StoreApp.App
 {
-    public class Store
+    public class Store : OrderProcess
     {
         private readonly IRepository _repository;
         private List<string> ProductList;
-        public Store(IRepository repository)
+        public Store(IRepository repository) : base(repository)
         {
             ProductList = new();
             _repository = repository;
@@ -45,14 +45,14 @@ namespace StoreApp.App
             else
             {
                 validID = true;
-                products.AppendLine($"ID\t\tProductName\t\t\tPrice");
+                products.AppendLine($"ID\t\tProduct Name\t\t\tPrice");
                 products.AppendLine("---------------------------------------------------------------");
                 int i = 1;
                 foreach (var record in allRecords)
                 {
                     // store ProductName
                     ProductList.Add(record.ProductName);
-                    products.AppendLine(string.Format("{0,10} | {1,30} | {2,10}", i, record.ProductName, record.Price));
+                    products.AppendLine(string.Format("{0,5} | {1,30} | {2,10}", i, record.ProductName, record.Price));
                     i++;
                 }
                 products.AppendLine("---------------------------------------------------------------");
@@ -67,10 +67,10 @@ namespace StoreApp.App
             return CustomerID;
         }
 
-        public bool SearchCustomer(string customerID)
+        public bool SearchCustomer(string customerID, out int CustomerID, string firstName ="", string lastName="")
         {
-            IEnumerable<Customer> customer = _repository.FindCustomer(customerID);
-
+            IEnumerable<Customer> customer = _repository.FindCustomer(customerID, firstName, lastName);
+            CustomerID = -1;
             if (customer == null || !customer.Any())
             {
                 Console.WriteLine("--- Account Not Found. Please Try Again. ---");
@@ -79,6 +79,7 @@ namespace StoreApp.App
             foreach (var existCustomer in customer)
             {
                 Console.WriteLine($"\nWelcome Back! {existCustomer.FirstName} {existCustomer.LastName}.\n");
+                CustomerID = existCustomer.CustomerID;
             }
             return true;
         }
@@ -111,13 +112,17 @@ namespace StoreApp.App
             // amount <= inventory amount
             if (int.TryParse(amount, out orderAmount))
             {
-                if (orderAmount >= 100 || orderAmount == 0) return false; // cannot order more than 99
+                if (orderAmount >= 100 || orderAmount == 0) {
+                    Console.WriteLine("\n--- Quantity cannot be 0 and cannot exceed the Max limit. ---");
+                    return false;
+                } // cannot order more than 99
                 int inventoryAmount = _repository.InventoryAmount(productName, locationID);
                 // Console.WriteLine("inventory amount: " + inventoryAmount);
-                if(orderAmount <= inventoryAmount)
+                if (orderAmount <= inventoryAmount)
                 {
                     return true;
                 }
+                else Console.WriteLine("\n--- Sorry, this Product is OUT of STOCK... Please select another product. ---");
             }
             return false;
         }
