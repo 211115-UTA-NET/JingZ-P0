@@ -14,5 +14,7 @@ namespace StoreApp.DataInfrastructure
         IEnumerable<Customer> FindCustomer(string customerID, string firstName, string lastName);
         IEnumerable<Order> GetLocationOrders(int customerID, int locationID);
         IEnumerable<Order> GetStoreOrders(int customerID);
+        IEnumerable<Order> GetMostRecentOrder(int customerID);
+        IEnumerable<Order> GetSpecificOrder(int customerID, int orderNum);
     }
 }

@@ -29,6 +29,7 @@ namespace StoreApp.App
                     "     1: Make an order\n" +
                     "     2: Display all order history of this store location\n" +
                     "     3: Display all order histroy of Stationery Shop\n" +
+                    "     4: Display a specific order. (Most Recent or By Order#)\n" +
                     "  Exit: Exit this store location.\n" +
                     "--------------------------------------------------------------\n" +
                     "Select an option: ");
@@ -53,6 +54,23 @@ namespace StoreApp.App
                     // display all order history of Stationery Shop
                     Console.WriteLine(orderProcess.DisplayOrderHistory(CustomerID, out bool getHistoryFailed));
                     if (getHistoryFailed) goto MenuSelection;
+                }
+                else if(menuSelection.Trim() == "4")
+                {
+                SearchOrder:
+                    Console.Write("Enter [0] for most recent order OR Enter [Order #] for specific order: ");
+                    string? searchOrder = Console.ReadLine();
+                    Console.WriteLine();
+                    if (CheckEmptyInput(searchOrder, out searchOrder)) goto SearchOrder;
+                    if (ExitShop(searchOrder)) goto StoreLocation; // if user want exit shop
+                    if (!int.TryParse(searchOrder, out int orderNum)) // must be integer
+                    {
+                        InvalidInputMsg();
+                        goto SearchOrder; 
+                    }
+                    // display most recent/specific order of the customer depend on user input
+                    Console.WriteLine(orderProcess.DisplayOrderHistory(CustomerID, out bool getHistoryFailed, -1, orderNum));
+                    if (getHistoryFailed) goto SearchOrder;
                 }
                 else
                 {

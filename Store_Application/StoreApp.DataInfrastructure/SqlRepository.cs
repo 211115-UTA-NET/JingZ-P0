@@ -236,7 +236,7 @@ namespace StoreApp.DataInfrastructure
                     new object[] { order[0].OrderNum });
             foreach (DataRow row in dataSet.Tables[0].Rows)
             {
-                receipt.Add(new((int)row["OrderNum"], (string)row["ProductName"], (int)row["Amount"], (int)row["LocationID"], (DateTimeOffset)row["OrderTime"]));
+                receipt.Add(new((int)row["OrderNum"], (string)row["ProductName"], (int)row["Amount"], (int)row["LocationID"], row["OrderTime"].ToString()));
             }
             return receipt;
         }
@@ -294,6 +294,17 @@ namespace StoreApp.DataInfrastructure
             return price;
         }
 
+        private IEnumerable<Order> AddOrderHistoryDatatoList(DataSet dataSet)
+        {
+            List<Order> orderHistroy = new();
+            foreach (DataRow row in dataSet.Tables[0].Rows)
+            {
+                orderHistroy.Add(new((int)row["OrderNum"], (string)row["ProductName"], (int)row["Amount"],
+                    (int)row["LocationID"], row["OrderTime"].ToString(), (string)row["StoreLocation"]));
+            }
+            return orderHistroy;
+        }
+
         /// <summary>
         ///     Get order history based on the store location of a customer
         /// </summary>
@@ -302,7 +313,6 @@ namespace StoreApp.DataInfrastructure
         /// <returns>A Order class type collection that contains the order history</returns>
         public IEnumerable<Order> GetLocationOrders(int customerID, int locationID)
         {
-            List<Order> orderHistroy = new();
             string query = "SELECT OrderProduct.OrderNum, ProductName, Amount, LocationID, Location.StoreLocation, OrderTime " +
                 "FROM CustomerOrder " +
                 "INNER JOIN OrderProduct ON CustomerOrder.OrderNum = OrderProduct.OrderNum " +
@@ -311,12 +321,7 @@ namespace StoreApp.DataInfrastructure
             DataSet dataSet = DBReadOnly(query,
                  new string[] { "customerId", "locationId" },
                  new object[] { customerID, locationID });
-            foreach (DataRow row in dataSet.Tables[0].Rows)
-            {
-                orderHistroy.Add(new((int)row["OrderNum"], (string)row["ProductName"], (int)row["Amount"], 
-                    (int)row["LocationID"], (DateTimeOffset)row["OrderTime"], (string)row["StoreLocation"]));
-            }
-            return orderHistroy;
+            return AddOrderHistoryDatatoList(dataSet);
         }
 
         /// <summary>
@@ -326,7 +331,6 @@ namespace StoreApp.DataInfrastructure
         /// <returns>A Order class type collection that contains the order history</returns>
         public IEnumerable<Order> GetStoreOrders(int customerID)
         {
-            List<Order> orderHistroy = new();
             string query = "SELECT OrderProduct.OrderNum, ProductName, Amount, LocationID, Location.StoreLocation, OrderTime " +
                 "FROM CustomerOrder " +
                 "INNER JOIN OrderProduct ON CustomerOrder.OrderNum = OrderProduct.OrderNum " +
@@ -335,12 +339,33 @@ namespace StoreApp.DataInfrastructure
             DataSet dataSet = DBReadOnly(query,
                  new string[] { "customerId" },
                  new object[] { customerID });
-            foreach (DataRow row in dataSet.Tables[0].Rows)
-            {
-                orderHistroy.Add(new((int)row["OrderNum"], (string)row["ProductName"], (int)row["Amount"],
-                    (int)row["LocationID"], (DateTimeOffset)row["OrderTime"], (string)row["StoreLocation"]));
-            }
-            return orderHistroy;
+            return AddOrderHistoryDatatoList(dataSet);
+        }
+
+        public IEnumerable<Order> GetMostRecentOrder(int customerID)
+        {
+            string query = "SELECT OrderProduct.OrderNum, ProductName, Amount, LocationID, Location.StoreLocation, OrderTime FROM CustomerOrder " +
+                "INNER JOIN OrderProduct ON CustomerOrder.OrderNum = OrderProduct.OrderNum " +
+                "INNER JOIN Location ON LocationID = Location.ID " +
+                "WHERE CustomerID = @customerID AND CustomerOrder.OrderNum " +
+                "= (SELECT MAX(OrderNum) AS OrderNum From CustomerOrder WHERE CustomerID = @customerID2);";
+            DataSet dataSet = DBReadOnly(query,
+                 new string[] { "customerID", "customerID2" },
+                 new object[] { customerID, customerID });
+            return AddOrderHistoryDatatoList(dataSet);
+        }
+
+        public IEnumerable<Order> GetSpecificOrder(int customerID, int orderNum)
+        {
+            string query = "SELECT OrderProduct.OrderNum, ProductName, Amount, LocationID, Location.StoreLocation, OrderTime " +
+                "FROM CustomerOrder " +
+                "INNER JOIN OrderProduct ON CustomerOrder.OrderNum = OrderProduct.OrderNum " +
+                "INNER JOIN Location ON LocationID = Location.ID " +
+                "WHERE CustomerID = @customerId AND CustomerOrder.OrderNum = @orderNum;";
+            DataSet dataSet = DBReadOnly(query,
+                 new string[] { "customerId", "orderNum" },
+                 new object[] { customerID, orderNum });
+            return AddOrderHistoryDatatoList(dataSet);
         }
     }
 }

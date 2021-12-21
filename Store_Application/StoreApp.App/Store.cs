@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace StoreApp.App
 {
-    public class Store : OrderProcess
+    public class Store
     {
         private readonly IRepository _repository;
         /// <summary>
         ///     store the displayed product list of the store location.
         /// </summary>
         private List<string> ProductList;
-        public Store(IRepository repository) : base(repository)
+        public Store(IRepository repository)
         {
             ProductList = new();
             _repository = repository;

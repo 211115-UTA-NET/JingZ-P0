@@ -48,6 +48,7 @@ namespace StoreApp.App
                     // price does not matters here
                     order.Add(new(orderNumber, productNames[i], productQty[i], locationID, null));
                 }
+                // add order to database, return summary
                 IEnumerable<Order> allRecords = ProcessOrder(order);
                 if (allRecords == null || !allRecords.Any())
                 {
@@ -67,22 +68,39 @@ namespace StoreApp.App
         /// <summary>
         ///     Used to display order history. Process params value to get the information back.
         ///     If locationID param is provided then it will return order history of the user in current store location.
-        ///     else if locationID param doesn't provided, then it will return all orders of this customer.
+        ///     If OrderNum param is provided then it will return order details of a specific/most recent order.
+        ///     else if locationID and OrderNum params both doesnnot provided, then it will return all orders of this customer.
         /// </summary>
         /// <param name="customerID">customer id</param>
         /// <param name="getHistoryFailed">return true when get order history failed. return false otherwise.</param>
-        /// <param name="locationID">(optional param) location ID</param>
+        /// <param name="locationID">(optional param) location ID provided for search local order history</param>
+        /// <param name="OrderNum">(optional param) sepecific order number or [0] for most recent. provided for searching specific/most recent order</param>
         /// <returns>A string of order history based on user input params. See summary for details.</returns>
-        public string DisplayOrderHistory(int customerID, out bool getHistoryFailed, int locationID = -1)
+        public string DisplayOrderHistory(int customerID, out bool getHistoryFailed, int locationID = -1, int OrderNum = -1)
         {
             var orderHistory = new StringBuilder();
             IEnumerable<Order> allRecords;
-            if (locationID > -1)
+            if (locationID > -1 && OrderNum < 0)
             {
+                // get all order history from the local store
                 allRecords = _repository.GetLocationOrders(customerID, locationID);
+            }
+            else if(OrderNum > -1 && locationID < 0)
+            {
+                // get most recent order
+                if(OrderNum == 0)
+                {
+                    allRecords = _repository.GetMostRecentOrder(customerID);
+                }
+                else
+                {
+                    // get order by order number
+                    allRecords = _repository.GetSpecificOrder(customerID, OrderNum);
+                }
             }
             else
             {
+                // get all order history of the customer
                 allRecords = _repository.GetStoreOrders(customerID);
             }
             if (allRecords == null || !allRecords.Any())

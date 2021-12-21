@@ -156,10 +156,15 @@ SELECT * FROM StoreInventory;
 SELECT * FROM CustomerOrder
 SELECT * FROM OrderProduct
 
+UPDATE Customer
+SET FirstName = 'Nancy', LastName = 'Smith'
+WHERE ID = 106;
+
+-- diaplay all orders from the location of the customer
 SELECT OrderProduct.OrderNum, ProductName, Amount, LocationID, Location.StoreLocation, OrderTime FROM CustomerOrder 
 INNER JOIN OrderProduct ON CustomerOrder.OrderNum = OrderProduct.OrderNum 
 INNER JOIN Location ON LocationID = Location.ID
-WHERE CustomerID = 106 AND LocationID=2 ORDER BY OrderProduct.OrderNum;
+WHERE CustomerID = 107 AND LocationID=2 ORDER BY OrderProduct.OrderNum;
 
 -- display all orders of this customer
 SELECT * FROM CustomerOrder
@@ -169,6 +174,24 @@ INNER JOIN OrderProduct ON CustomerOrder.OrderNum = OrderProduct.OrderNum
 INNER JOIN Location ON LocationID = Location.ID
 WHERE CustomerID = 107 ORDER BY OrderProduct.OrderNum;
 
+-- display a specific order of a customer by order#
+SELECT * FROM CustomerOrder
+SELECT * FROM OrderProduct
+SELECT OrderProduct.OrderNum, ProductName, Amount, Location.ID, Location.StoreLocation, OrderTime FROM CustomerOrder 
+INNER JOIN OrderProduct ON CustomerOrder.OrderNum = OrderProduct.OrderNum 
+INNER JOIN Location ON LocationID = Location.ID
+WHERE CustomerID = 106 AND CustomerOrder.OrderNum=29;
+
+-- by most recent
+SELECT MAX(OrderNum) AS OrderNum From CustomerOrder WHERE CustomerID = 106;
+
+SELECT OrderProduct.OrderNum, ProductName, Amount, Location.ID, Location.StoreLocation, OrderTime FROM CustomerOrder 
+INNER JOIN OrderProduct ON CustomerOrder.OrderNum = OrderProduct.OrderNum 
+INNER JOIN Location ON LocationID = Location.ID
+WHERE CustomerID = 106 AND 
+CustomerOrder.OrderNum
+=(SELECT MAX(OrderNum) AS OrderNum From CustomerOrder WHERE CustomerID = 106);
+
 -- empty up tables
-DELETE FROM CustomerOrder WHERE CustomerID = 106
-DELETE FROM OrderProduct WHERE LocationID = 3
+DELETE FROM CustomerOrder WHERE OrderNum = 33
+DELETE FROM OrderProduct WHERE OrderNum = 33
