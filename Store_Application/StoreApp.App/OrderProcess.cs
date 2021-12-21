@@ -63,13 +63,16 @@ namespace StoreApp.App
             }
             return receipt.ToString();
         }
+
         /// <summary>
-        ///     Used to display order history. if locationID param has a value then it will return order history of the user in current store location.
+        ///     Used to display order history. Process params value to get the information back.
+        ///     If locationID param is provided then it will return order history of the user in current store location.
+        ///     else if locationID param doesn't provided, then it will return all orders of this customer.
         /// </summary>
-        /// <param name="customerID"></param>
-        /// <param name="getHistoryFailed"></param>
-        /// <param name="locationID"></param>
-        /// <returns></returns>
+        /// <param name="customerID">customer id</param>
+        /// <param name="getHistoryFailed">return true when get order history failed. return false otherwise.</param>
+        /// <param name="locationID">(optional param) location ID</param>
+        /// <returns>A string of order history based on user input params. See summary for details.</returns>
         public string DisplayOrderHistory(int customerID, out bool getHistoryFailed, int locationID = -1)
         {
             var orderHistory = new StringBuilder();
@@ -126,6 +129,11 @@ namespace StoreApp.App
             return orderHistory.ToString();
         }
 
+        /// <summary>
+        ///     A display format for the order history.
+        /// </summary>
+        /// <param name="allRecords">Order class type collection</param>
+        /// <returns>A string of formated order history.</returns>
         private string OrderRecordFormat(IEnumerable<Order> allRecords)
         {
             List<decimal> price = _repository.GetPrice((List<Order>)allRecords);
@@ -160,6 +168,12 @@ namespace StoreApp.App
             return format.ToString();
         }
 
+        /// <summary>
+        ///     Used in DisplayOrderDetail() method.
+        ///     Call repository to insert the order to database. Return inserted order information.
+        /// </summary>
+        /// <param name="order">Order type list</param>
+        /// <returns>Inserted order information</returns>
         private IEnumerable<Order> ProcessOrder(List<Order> order)
         {
             /*

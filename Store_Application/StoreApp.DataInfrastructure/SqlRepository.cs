@@ -12,7 +12,11 @@ namespace StoreApp.DataInfrastructure
     public class SqlRepository : IRepository
     {
         private readonly string _connectionString;
-
+        /// <summary>
+        ///     initialize connection string
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public SqlRepository(string connectionString)
         {
             _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
@@ -21,17 +25,20 @@ namespace StoreApp.DataInfrastructure
         /// <summary>
         ///     A method takes a query parameters and returns a DataSet type result. 
         ///     Only for read only database connection. (ex. SELECT)
-        ///     Notes: colnames parameter 
+        ///     Using Disconnected Architecture: closeing the connection ASAP
+        ///     Notes: paramName and inputVal parameters are optional.
         /// </summary>
-        /// <param name="query">Database query command</param>
+        /// <param name="query">Database query command.</param>
         /// <param name="paramName">parameter name in your query (ex. "...WHERE ID = @id" paramName = "id")</param>
         /// <param name="inputVal">the value for the query search condition</param>
         /// <returns>DataSet type</returns>
         private DataSet DBReadOnly(string? query, string[]? paramName = null, object[]? inputVal = null)
         {
+            // open connection
             using SqlConnection connection = new(_connectionString);
             connection.Open();
             using SqlCommand command = new(query, connection);
+            // prevent sql injection
             if (paramName != null && inputVal != null)
             {
                 for (int i = 0; i < inputVal.Length; i++)
@@ -39,18 +46,32 @@ namespace StoreApp.DataInfrastructure
                     command.Parameters.AddWithValue($"@{paramName[i]}", inputVal[i]);
                 }
             }
+            // use data adapter to fill a dataset with the command
             using SqlDataAdapter adapter = new(command);
             DataSet dataSet = new();
+            // execute the command
             adapter.Fill(dataSet);
+            // close the connection
             connection.Close();
             return dataSet;
         }
 
+        /// <summary>
+        ///     A method takes a query parameters and returns number of row affected by the insertion. 
+        ///     Only for write only database connection. (ex. INSERT)
+        ///     Notes: paramName and inputVal parameters are optional.
+        /// </summary>
+        /// <param name="query">Database query command.</param>
+        /// <param name="paramName">parameter name in your query (ex. "...WHERE ID = @id" paramName = "id")</param>
+        /// <param name="inputVal">the value for the query search condition</param>
+        /// <returns>Number of rows affected by the insertion</returns>
         private int DBWriteOnly(string? query, string[]? paramName = null, object[]? inputVal = null)
         {
+            // open connection
             using SqlConnection connection = new(_connectionString);
             connection.Open();
             using SqlCommand command = new(query, connection);
+            // prevent sql injection
             if (paramName != null && inputVal != null)
             {
                 for (int i = 0; i < inputVal.Length; i++)
@@ -58,11 +79,17 @@ namespace StoreApp.DataInfrastructure
                     command.Parameters.AddWithValue($"@{paramName[i]}", inputVal[i]);
                 }
             }
+            // execute the command
             int rowsAffected = command.ExecuteNonQuery();
+            // close the connection
             connection.Close();
             return rowsAffected;
         }
 
+        /// <summary>
+        ///     Get location List from database
+        /// </summary>
+        /// <returns>A Location class type collection</returns>
         public IEnumerable<Location> GetLocationList()
         {
             List<Location> result = new();
@@ -73,6 +100,12 @@ namespace StoreApp.DataInfrastructure
             }
             return result;
         }
+
+        /// <summary>
+        ///     Get sales products and price from store location
+        /// </summary>
+        /// <param name="locationID">location id</param>
+        /// <returns>A Product class type collection</returns>
         public IEnumerable<Product> GetStoreProducts(string locationID)
         {
             List<Product> result = new();
@@ -92,6 +125,12 @@ namespace StoreApp.DataInfrastructure
             return result;
         }
 
+        /// <summary>
+        ///     Insert new customer name to the database and return the customer id.
+        /// </summary>
+        /// <param name="firstName">customer first name</param>
+        /// <param name="lastName">customer last name</param>
+        /// <returns>A cutomer id, if return -1 means failed the customer insertion.</returns>
         public int AddNewCustomer(string firstName, string lastName)
         {
             int result = DBWriteOnly("INSERT Customer VALUES (@firstName, @lastName);",
@@ -106,6 +145,15 @@ namespace StoreApp.DataInfrastructure
             }
             else return -1;
         }
+
+        /// <summary>
+        ///     If customerID = 'forgot', then search by customer name.
+        ///     else search customer by customer id
+        /// </summary>
+        /// <param name="customerID">customerID</param>
+        /// <param name="firstName">optional</param>
+        /// <param name="lastName">optional</param>
+        /// <returns>Customer informations</returns>
         public IEnumerable<Customer> FindCustomer(string customerID, string firstName = "", string lastName = "")
         {
             List<Customer> customer = new();
@@ -132,7 +180,7 @@ namespace StoreApp.DataInfrastructure
         }
 
         /// <summary>
-        ///     Find the product amount based on the location id and product name.
+        ///     Find theinventory product amount based on the location id and product name.
         /// </summary>
         /// <param name="productName">Valid product name</param>
         /// <param name="locationID">Valid location ID</param>
@@ -147,6 +195,12 @@ namespace StoreApp.DataInfrastructure
             return amount;
         }
 
+        /// <summary>
+        ///     Insert customer order to CustomerOrder db table, 
+        ///     then return the order number of the order.
+        /// </summary>
+        /// <param name="customerID">customer id</param>
+        /// <returns>Order number of the new order</returns>
         public int GetOrderNumber(int customerID)
         {
             int result = DBWriteOnly("INSERT CustomerOrder VALUES (@customerID)",
@@ -162,7 +216,7 @@ namespace StoreApp.DataInfrastructure
             return -1;
         }
         /// <summary>
-        ///     Iterate the Order List data to the database, and update inventory amount.
+        ///     Iteratly insert the Order List data to the database, and update inventory amount.
         ///     Return summary of the insertion as receipt.
         /// </summary>
         /// <param name="order">Order type class</param>
@@ -188,9 +242,9 @@ namespace StoreApp.DataInfrastructure
         }
 
         /// <summary>
-        ///     Insert order product to 
+        ///     Insert a single order product to the database. 
         /// </summary>
-        /// <param name="order"></param>
+        /// <param name="order">Order class type</param>
         /// <returns>true if insert success, false otherwise.</returns>
         private bool InsertOrderProduct(Order order)
         {
@@ -201,11 +255,12 @@ namespace StoreApp.DataInfrastructure
             if (result > 0) return true;
             return false;
         }
+
         /// <summary>
-        ///     Update inventory table column. 
+        ///     Update inventory table column:
         ///     Subtract the inventory amount by the customer order amount.
         /// </summary>
-        /// <param name="order"></param>
+        /// <param name="order">Order class type</param>
         /// <returns>true if update success, false otherwise.</returns>
         private bool UpdateInventoryAmount(Order order)
         {
@@ -220,6 +275,11 @@ namespace StoreApp.DataInfrastructure
             return false;
         }
 
+        /// <summary>
+        ///     Get product price from the database
+        /// </summary>
+        /// <param name="order">Order class type</param>
+        /// <returns>The product price</returns>
         public List<decimal> GetPrice(List<Order> order)
         {
             List<decimal> price = new();
@@ -234,6 +294,12 @@ namespace StoreApp.DataInfrastructure
             return price;
         }
 
+        /// <summary>
+        ///     Get order history based on the store location of a customer
+        /// </summary>
+        /// <param name="customerID"></param>
+        /// <param name="locationID"></param>
+        /// <returns>A Order class type collection that contains the order history</returns>
         public IEnumerable<Order> GetLocationOrders(int customerID, int locationID)
         {
             List<Order> orderHistroy = new();
@@ -253,6 +319,11 @@ namespace StoreApp.DataInfrastructure
             return orderHistroy;
         }
 
+        /// <summary>
+        ///     Get all order history of the customer.
+        /// </summary>
+        /// <param name="customerID"></param>
+        /// <returns>A Order class type collection that contains the order history</returns>
         public IEnumerable<Order> GetStoreOrders(int customerID)
         {
             List<Order> orderHistroy = new();

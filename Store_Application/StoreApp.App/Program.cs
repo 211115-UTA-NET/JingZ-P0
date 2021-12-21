@@ -72,6 +72,7 @@ namespace StoreApp.App
                 }
             }
         }
+
         /// <summary>
         ///     Customer login section. 
         ///     If user is new customer, then create a new account and print the customer ID to user. 
@@ -273,7 +274,6 @@ namespace StoreApp.App
             }
         }
 
-
         /// <summary>
         ///     Printing empty input error message.
         /// </summary>
@@ -298,6 +298,7 @@ namespace StoreApp.App
             userNotNullInput = userInput;
             return false;
         }
+
         /// <summary>
         ///     Check if user input is "exit".
         /// </summary>

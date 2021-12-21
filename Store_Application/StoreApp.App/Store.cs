@@ -11,12 +11,19 @@ namespace StoreApp.App
     public class Store : OrderProcess
     {
         private readonly IRepository _repository;
+        /// <summary>
+        ///     store the displayed product list of the store location.
+        /// </summary>
         private List<string> ProductList;
         public Store(IRepository repository) : base(repository)
         {
             ProductList = new();
             _repository = repository;
         }
+        /// <summary>
+        ///     Get location id and store location from database
+        /// </summary>
+        /// <returns>A string of formated store location list</returns>
         public string GetLocations()
         {
             IEnumerable<Location> allRecords = _repository.GetLocationList();
@@ -33,6 +40,13 @@ namespace StoreApp.App
             ProductList = new(); 
             return locations.ToString();
         }
+
+        /// <summary>
+        ///     Display selected store location products.
+        /// </summary>
+        /// <param name="locationID">location id</param>
+        /// <param name="validID">return true if location ID is valid, false otherwise.</param>
+        /// <returns>A string of formated store location list</returns>
         public string GetStoreProducts(string locationID, out bool validID)
         {
             IEnumerable<Product> allRecords = _repository.GetStoreProducts(locationID);
@@ -61,12 +75,28 @@ namespace StoreApp.App
             return products.ToString();
         }
 
+        /// <summary>
+        ///     Added new customer to the database
+        /// </summary>
+        /// <param name="firstName">new customer first name</param>
+        /// <param name="lastName">new customer last name</param>
+        /// <returns>Customer ID</returns>
         public int CreateAccount(string firstName, string lastName)
         {
             int CustomerID = _repository.AddNewCustomer(firstName, lastName);
             return CustomerID;
         }
 
+        /// <summary>
+        ///     Search customer by customer ID or customer name.
+        ///     if CustomerID = 'forgot', then it will search customer by name.
+        ///     else will search by CustomerID.
+        /// </summary>
+        /// <param name="customerID">customer ID</param>
+        /// <param name="CustomerID">return valid customer ID for who login using name</param>
+        /// <param name="firstName">customer first name</param>
+        /// <param name="lastName">customer last name</param>
+        /// <returns>true if customer exists, false otherwise.</returns>
         public bool SearchCustomer(string customerID, out int CustomerID, string firstName ="", string lastName="")
         {
             IEnumerable<Customer> customer = _repository.FindCustomer(customerID, firstName, lastName);
@@ -84,6 +114,12 @@ namespace StoreApp.App
             return true;
         }
 
+        /// <summary>
+        ///     Check is product name exists in the ProductList using productID as index.
+        /// </summary>
+        /// <param name="productID">Product ID</param>
+        /// <param name="ProductName">return the product name</param>
+        /// <returns>true if product id is valid, false otherwise</returns>
         public bool ValidProductID(string productID, out string ProductName)
         {
             if (int.TryParse(productID, out int productId))
@@ -100,7 +136,7 @@ namespace StoreApp.App
         }
 
         /// <summary>
-        ///     Check if user select product quantity is valid or not.
+        ///     Check if user select product quantity is valid or not by comparing the store inventory amount
         /// </summary>
         /// <param name="productName">User selected product (valid)</param>
         /// <param name="amount">User input amount</param>
@@ -122,7 +158,7 @@ namespace StoreApp.App
                 {
                     return true;
                 }
-                else Console.WriteLine("\n--- Sorry, this Product is OUT of STOCK... Please select another product. ---");
+                else Console.WriteLine("\n--- Sorry, this product is OUT of STOCK... Please select another product. ---");
             }
             return false;
         }
