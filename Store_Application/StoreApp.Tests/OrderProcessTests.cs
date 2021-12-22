@@ -28,7 +28,7 @@ namespace StoreApp.Tests
         [InlineData(-1)]  // Invalid customer ID
         [InlineData(106, 0)]  // valid customer ID, Invalid location ID
         [InlineData(106, -1, 1000)] // valid customer ID, Invalid orderNum
-        public void DisplayAllOrderHistory_Invalid_Prameters(int customerID, int locationID =-1, int orderNum = -1)
+        public void DisplayAllOrderHistoryInvalidParameters(int customerID, int locationID =-1, int orderNum = -1)
         {
             Mock<IRepository> mockRepo = new();
             // lambda expression syntax: like an anonymous classless method (this kind of value in C# is called a "delegate")

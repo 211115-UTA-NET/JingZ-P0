@@ -69,7 +69,7 @@ namespace StoreApp.App
         ///     Used to display order history. Process params value to get the information back.
         ///     If locationID param is provided then it will return order history of the user in current store location.
         ///     If OrderNum param is provided then it will return order details of a specific/most recent order.
-        ///     else if locationID and OrderNum params both doesnnot provided, then it will return all orders of this customer.
+        ///     else if locationID and OrderNum params both not provided, then it will return all orders of this customer.
         /// </summary>
         /// <param name="customerID">customer id</param>
         /// <param name="getHistoryFailed">return true when get order history failed. return false otherwise.</param>

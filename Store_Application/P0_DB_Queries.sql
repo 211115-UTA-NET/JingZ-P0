@@ -149,10 +149,10 @@ SELECT Price FROM StoreInventory WHERE LocationID = 2 AND ProductName='Eraser'
 
 SELECT * FROM Customer WHERE FirstName='John' AND LastName='Doe';
 
--- display all orders in the store location from specific customer
+-- display all
 SELECT * FROM Customer
 SELECT * FROM Location
-SELECT * FROM StoreInventory;
+SELECT * FROM StoreInventory where locationID=3 order by price;
 SELECT * FROM CustomerOrder
 SELECT * FROM OrderProduct
 

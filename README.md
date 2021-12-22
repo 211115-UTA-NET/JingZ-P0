@@ -41,5 +41,5 @@ Nov 15 2021 Arlington .NET / Richard Hawkins, Nick Escalona
 * (optional: for at least one product, more than one inventory item decrements when ordering that product)
 
 ### test
-* at least 10 test methods
+* at least 10 test methods √
 * focus on unit testing business logic; testing the console-app-specific parts is low priority

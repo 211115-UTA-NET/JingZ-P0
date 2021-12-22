@@ -100,7 +100,7 @@ namespace StoreApp.App
         public bool SearchCustomer(string customerID, out int CustomerID, string firstName ="", string lastName="")
         {
             IEnumerable<Customer> customer = _repository.FindCustomer(customerID, firstName, lastName);
-            CustomerID = -1;
+            CustomerID = -1;  // for out param
             if (customer == null || !customer.Any())
             {
                 Console.WriteLine("--- Account Not Found. Please Try Again. ---");
@@ -124,11 +124,14 @@ namespace StoreApp.App
         {
             if (int.TryParse(productID, out int productId))
             {
-                productId -= 1; // used as List index
-                if (productId >= 0 && ProductList.Count > productId)
+                if (productId > 0 && productId <= ProductList.Count) // must within array range
                 {
-                    ProductName = ProductList[productId];
-                    return true;
+                    productId -= 1; // used as List index
+                    if (productId >= 0 && ProductList.Count > productId)
+                    {
+                        ProductName = ProductList[productId];
+                        return true;
+                    }
                 }
             }
             ProductName = "";
@@ -148,7 +151,7 @@ namespace StoreApp.App
             // amount <= inventory amount
             if (int.TryParse(amount, out orderAmount))
             {
-                if (orderAmount >= 100 || orderAmount == 0) {
+                if (orderAmount >= 100 || orderAmount <= 0) {
                     Console.WriteLine("\n--- Quantity cannot be 0 and cannot exceed the Max limit. ---");
                     return false;
                 } // cannot order more than 99
