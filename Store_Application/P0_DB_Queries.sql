@@ -156,9 +156,8 @@ SELECT * FROM StoreInventory where locationID=3 order by price;
 SELECT * FROM CustomerOrder
 SELECT * FROM OrderProduct
 
-UPDATE Customer
-SET FirstName = 'Nancy', LastName = 'Smith'
-WHERE ID = 106;
+SELECT OrderNum, ProductName, Amount, LocationID, OrderTime, StoreLocation FROM OrderProduct, Location WHERE LocationID = Location.ID AND OrderNum =35
+
 
 -- diaplay all orders from the location of the customer
 SELECT OrderProduct.OrderNum, ProductName, Amount, LocationID, Location.StoreLocation, OrderTime FROM CustomerOrder 
@@ -193,5 +192,6 @@ CustomerOrder.OrderNum
 =(SELECT MAX(OrderNum) AS OrderNum From CustomerOrder WHERE CustomerID = 106);
 
 -- empty up tables
-DELETE FROM CustomerOrder WHERE OrderNum = 33
-DELETE FROM OrderProduct WHERE OrderNum = 33
+DELETE FROM CustomerOrder WHERE CustomerID = 109
+DELETE FROM OrderProduct WHERE OrderNum = 35
+DELETE FROM Customer WHERE ID=109

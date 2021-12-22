@@ -10,20 +10,6 @@ namespace StoreApp.Tests
 {
     public class OrderProcessTests
     {
-        //public static IEnumerable<object[]> TestDisplayOrderHistory =>
-        //new List<object[]>
-        //{
-        //    new object[] { 107, -1 }
-        //};
-
-        //[Theory]
-        //[MemberData(nameof(TestDisplayOrderHistory))]
-
-        //List<Order> orders = new List<Order>()
-        //{
-        //    new(27, "Stapler", 2 ,3, "2021-12-20 20:53:18 PM + 00:00", "613 Washington Blvd, Jersey City, NJ 07310" ),
-        //    new(29,  "Pen Case",    3  , 2 , "2021-12-20 21:05:35 PM + 00:00" ,"367 Russell St, Hadley, MA 01035")
-        //};
         [Theory]
         [InlineData(-1)]  // Invalid customer ID
         [InlineData(106, 0)]  // valid customer ID, Invalid location ID

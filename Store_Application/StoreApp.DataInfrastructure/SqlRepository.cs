@@ -231,14 +231,12 @@ namespace StoreApp.DataInfrastructure
                     break;
             }
             // all success return receipt
-            DataSet dataSet = DBReadOnly("SELECT * FROM OrderProduct WHERE OrderNum = @orderNum;",
+            DataSet dataSet = DBReadOnly("SELECT OrderNum, ProductName, Amount, LocationID, OrderTime, StoreLocation " +
+                "FROM OrderProduct, Location " +
+                "WHERE LocationID = Location.ID AND OrderNum = @orderNum;",
                     new string[] { "orderNum" },
                     new object[] { order[0].OrderNum });
-            foreach (DataRow row in dataSet.Tables[0].Rows)
-            {
-                receipt.Add(new((int)row["OrderNum"], (string)row["ProductName"], (int)row["Amount"], (int)row["LocationID"], row["OrderTime"].ToString()));
-            }
-            return receipt;
+            return AddOrderHistoryDatatoList(dataSet);
         }
 
         /// <summary>

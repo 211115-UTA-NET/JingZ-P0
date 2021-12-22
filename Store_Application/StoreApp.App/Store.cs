@@ -108,7 +108,7 @@ namespace StoreApp.App
             }
             foreach (var existCustomer in customer)
             {
-                Console.WriteLine($"\nWelcome Back! {existCustomer.FirstName} {existCustomer.LastName}.\n");
+                Console.WriteLine($"\nWelcome Back! {existCustomer.FirstName} {existCustomer.LastName}.\nPlease Remember Your Customer ID#: {existCustomer.CustomerID}\n");
                 CustomerID = existCustomer.CustomerID;
             }
             return true;

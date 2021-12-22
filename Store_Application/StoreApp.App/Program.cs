@@ -70,7 +70,7 @@ namespace StoreApp.App
                     }
                     // display most recent/specific order of the customer depend on user input
                     Console.WriteLine(orderProcess.DisplayOrderHistory(CustomerID, out bool getHistoryFailed, -1, orderNum));
-                    if (getHistoryFailed) goto SearchOrder;
+                    if (getHistoryFailed) goto MenuSelection;
                 }
                 else
                 {
@@ -131,12 +131,12 @@ namespace StoreApp.App
                     // check if lastname is null/empty
                     if (CheckEmptyInput(lastName, out lastName)) goto Login;
                     customerExist = store.SearchCustomer(customerID, out CustomerID, firstName, lastName);
-                    if (!customerExist) goto Login;
+                    if (!customerExist) goto NewCustomer;
                 }
                 else
                 {
                     customerExist = store.SearchCustomer(customerID, out CustomerID);
-                    if (!customerExist) goto Login;
+                    if (!customerExist) goto NewCustomer;
                 }
             }
             else if (input.ToLower() == "y")    // new customer, add to database
