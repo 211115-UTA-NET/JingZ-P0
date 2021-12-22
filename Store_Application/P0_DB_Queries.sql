@@ -152,9 +152,9 @@ SELECT * FROM Customer WHERE FirstName='John' AND LastName='Doe';
 -- display all
 SELECT * FROM Customer
 SELECT * FROM Location
-SELECT * FROM StoreInventory where locationID=3 order by price;
 SELECT * FROM CustomerOrder
 SELECT * FROM OrderProduct
+SELECT * FROM StoreInventory where locationID=3 order by price;
 
 SELECT OrderNum, ProductName, Amount, LocationID, OrderTime, StoreLocation FROM OrderProduct, Location WHERE LocationID = Location.ID AND OrderNum =35
 
@@ -194,4 +194,4 @@ CustomerOrder.OrderNum
 -- empty up tables
 DELETE FROM CustomerOrder WHERE CustomerID = 109
 DELETE FROM OrderProduct WHERE OrderNum = 35
-DELETE FROM Customer WHERE ID=109
+DELETE FROM Customer WHERE ID=110

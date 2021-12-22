@@ -49,6 +49,7 @@ namespace StoreApp.App
         /// <returns>A string of formated store location list</returns>
         public string GetStoreProducts(string locationID, out bool validID)
         {
+            ProductList = new();
             IEnumerable<Product> allRecords = _repository.GetStoreProducts(locationID);
             var products = new StringBuilder();
             if (allRecords == null || !allRecords.Any())
@@ -108,7 +109,8 @@ namespace StoreApp.App
             }
             foreach (var existCustomer in customer)
             {
-                Console.WriteLine($"\nWelcome Back! {existCustomer.FirstName} {existCustomer.LastName}.\nPlease Remember Your Customer ID#: {existCustomer.CustomerID}\n");
+                Console.WriteLine($"\nWelcome Back! {existCustomer.FirstName} {existCustomer.LastName}.\n" +
+                    $"Please Remember Your Customer ID#: {existCustomer.CustomerID}\n");
                 CustomerID = existCustomer.CustomerID;
             }
             return true;

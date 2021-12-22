@@ -40,6 +40,8 @@ namespace StoreApp.App
                 if (menuSelection.Trim() == "1")
                 {
                     // ORDERING SECTION
+                    Console.WriteLine();
+                    Console.WriteLine(store.GetStoreProducts(LocationID + "", out bool validID));
                     Ordering(store, LocationID, CustomerID, out exitShop);
                     if (exitShop) goto MenuSelection;
                 }
@@ -195,7 +197,7 @@ namespace StoreApp.App
             exit = ExitShop(locationID); // if user want exit shop
             if (exit) return -1;
             // Print store products and get product list
-            Console.WriteLine(store.GetStoreProducts(locationID, out bool validID));
+            string tmp = store.GetStoreProducts(locationID, out bool validID);
             // invalidID go back to the top and try again
             if (!validID) goto StoreLocations;
             return int.Parse(locationID);
@@ -245,6 +247,8 @@ namespace StoreApp.App
                         if (CheckEmptyInput(input, out input)) goto AskAgain;
                         if (input == "1")
                         {
+                            Console.WriteLine();
+                            Console.WriteLine(store.GetStoreProducts(locationID+"", out bool validID));
                             goto Ordering;
                         }
                         else if (input == "2")
@@ -265,6 +269,8 @@ namespace StoreApp.App
                             {
                                 productNames = new();
                                 productQty = new();
+                                Console.WriteLine();
+                                Console.WriteLine(store.GetStoreProducts(locationID + "", out bool validID));
                                 goto Ordering;
                             } 
                             else if(continueShopping.ToLower() == "n" || ExitShop(continueShopping))
